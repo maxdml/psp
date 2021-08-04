@@ -4,7 +4,7 @@ Perséphone
 This repository hosts our artifact for the SOSP'21 Artifact Evaluation Committee.
 Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. We evaluate Perséphone against two competing systems, [Shenango](https://www.usenix.org/conference/nsdi19/presentation/ousterhout) and [Shinjuku](https://www.usenix.org/conference/nsdi19/presentation/kaffes).
 
-We will use cloudlab to reproduce the paper's results. Because Shinjuku requires a specific version of Linux 4.4.0, we break down the evaluation in two steps: gathering and plotting results on Shinjuku and Perséphone first, then gathering data for Shenango and updating the plots.
+We will use cloudlab to reproduce the paper's results. Because Shinjuku requires a specific version of Linux 4.4.0, we break down the evaluation in two steps: gathering and plotting results for Shinjuku and Perséphone first, then gathering data for Shenango and updating the plots.
 
 We estimate the entire process to take X amount of time.
 
@@ -21,6 +21,22 @@ We will use Clemson's c6420 machines, so make sure that some are [available](htt
 
 Now, instantiate a new experiment using the profile. You should be able to login using your cloudlab credentials.
 
+Building the systems
+---------------------------------
+On the server machine:
+```bash
+export AE_DIR=/usr/local/sosp
+git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/Persephone
+${AE_DIR}/Persephone/sosp_aec/base_setup.sh
+```
+This script will setup Perséphone, Shinjuku, and other dependent systems.
+
+On the client machines:
+```bash
+export AE_DIR=/usr/local/sosp
+git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout client; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
+```
+
 Simple client-server tests
 ---------------------------------
 We will now make sure that all three systems work (Perséphone, Shinjuku, Shenango).
@@ -31,16 +47,13 @@ In the following steps, please set the "log_dir" entry to "${AE_DIR}/experiments
 On the server:
 ```bash
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh Persephone
-sudo numactl -N0 -m0 ${AE_DIR}/Persephone/build/src/c++/apps/app/psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
+cd ${AE_DIR}/Persephone/build/src/c++/apps/app/
+sudo numactl -N0 -m0 psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
 ```
-
-If you get this error:
-`/sosp/Persephone/build/src/c++/apps/app/psp-app: error while loading shared libraries: ../../../../../submodules/fake_work/libfake.so: cannot open shared object file: No such file or directory`
-Go in /sosp/Persephone/build/src/c++/apps/app/psp-app, and from there `ls ../../../../../submodules/fake_work/libfake.so`
 
 On one client:
 ```bash
-${AE_DIR}/Persephone/sosp_aec/base_start.sh client
+${AE_DIR}/client/sosp_aec/base_start.sh client
 sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
@@ -78,8 +91,6 @@ sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config
 ```
 
 You should have a similar ouput than for Perséphone if this test worked correctly.
-
-### Shenango
 
 Reproducing experiments
 =======================
