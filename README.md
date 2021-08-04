@@ -30,10 +30,13 @@ In the following steps, please set the "log_dir" entry to "${AE_DIR}/experiments
 ### Perséphone
 On the server:
 ```bash
-# base_start.sh only needed if calling psp-app for the first time
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh Persephone
 sudo numactl -N0 -m0 ${AE_DIR}/Persephone/build/src/c++/apps/app/psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
 ```
+
+If you get this error:
+`/sosp/Persephone/build/src/c++/apps/app/psp-app: error while loading shared libraries: ../../../../../submodules/fake_work/libfake.so: cannot open shared object file: No such file or directory`
+Go in /sosp/Persephone/build/src/c++/apps/app/psp-app, and from there `ls ../../../../../submodules/fake_work/libfake.so`
 
 On one client:
 ```bash
