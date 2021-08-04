@@ -1,4 +1,4 @@
+shremote_cfgs: '/psp/Shremote_cfgs'
 log_dir: '/proj/psp-PG0/maxdml/experiments/'
-shremote_cfgs: '/home/maxdml/codeZ/Persephone/Shremote_cfgs'
-psp_apps: '/proj/psp-PG0/maxdml/Persephone/build/src/c++/apps/'
-clt: '/proj/psp-PG0/maxdml/client/build/src/c++/apps/'
+psp_apps: '/usr/local/sosp/Persephone/build/src/c++/apps/'
+clt: '/usr/local/sosp/client/build/src/c++/apps/'

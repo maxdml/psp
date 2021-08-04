@@ -7,7 +7,7 @@ import yaml
 
 cache = {}
 
-exp_base_folder = '/home/maxdml/experiments/'
+exp_base_folder = './experiments/'
 
 workloads = {
     'BIM1': {

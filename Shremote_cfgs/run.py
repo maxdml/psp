@@ -44,23 +44,24 @@ parser.add_argument('-C', '--n-clt-threads', type=str, default='1')
 parser.add_argument('-T', '--parse-test', dest='parse_test', action='store_true')
 parser.add_argument('-a', '--app-type', type=str, default='MB')
 parser.add_argument('-d', '--downsample', type=int, default=-1)
+parser.add_argument('-b', '--base-output', type=str, default='../experiments')
 # env
-DIR = os.environ["AE_DIR"]
-SCHEDULES = os.path.join(DIR, "Shremote_cfgs/schedules", "")
-SHREMOTE = os.path.join(DIR, "Shremote/shremote.py")
-BASE_OUTPUT = os.path.join(DIR, "experiments", "")
+args = parser.parse_args()
+DIR = os.path.dirname(os.path.abspath(__file__))
+SCHEDULES = os.path.join(DIR, "schedules", "")
+SHREMOTE = os.path.join(DIR, "..", "submodules", "Shremote/shremote.py")
+BASE_OUTPUT = args.base_output
 SRV_CPUS = "2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
 CLT_CPUS = "2"
-args = parser.parse_args()
 if isinstance(args.policies, str):
     args.policies = [args.policies]
 if args.system == 'shinjuku':
     SRV_CPUS = "2 34 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
-    CFG = os.path.join(DIR, "Shremote_cfgs/shinjuku.yml")
+    CFG = os.path.join(DIR, "shinjuku.yml")
 elif args.system == 'caladan':
-    CFG = os.path.join(DIR, "Shremote_cfgs/caladan.yml")
+    CFG = os.path.join(DIR, "caladan.yml")
 else:
-    CFG = os.path.join(DIR, "Shremote_cfgs/psp.yml")
+    CFG = os.path.join(DIR, "psp.yml")
 output_paths = []
 #for LOAD in np.arange(.05, 0.91, .05):
 #for LOAD in np.arange(.65, 0.96, .05):

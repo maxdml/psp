@@ -45,7 +45,8 @@ shinjuku:
 
 psp_app:
     start: >-
-        sudo numactl -N0 -m0 {0.dirs.psp_apps}/app/psp-app
+        cd {0.dirs.psp_apps}/app &&
+        sudo numactl -N0 -m0 ./psp-app
         --cfg {config}
         --label {0.label}
     stop: sudo kill {pid}
