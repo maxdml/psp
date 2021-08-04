@@ -5,7 +5,7 @@
     ignore = dirty
 [submodule "submodules/shinjuku"]
 	path = submodules/shinjuku
-	url = git@github.com:maxdml/shinjuku.git
+	url = https://github.com/maxdml/shinjuku
 [submodule "submodules/rocksdb"]
 	path = submodules/rocksdb
 	url = https://github.com/facebook/rocksdb

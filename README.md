@@ -4,11 +4,9 @@ Perséphone
 This repository hosts our artifact for the SOSP'21 Artifact Evaluation Committee.
 Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. We evaluate Perséphone against two competing systems, [Shenango](https://www.usenix.org/conference/nsdi19/presentation/ousterhout) and [Shinjuku](https://www.usenix.org/conference/nsdi19/presentation/kaffes).
 
-We will use cloudlab to reproduce the paper's results. The evaluation is broken down in two steps: first setting up cloudlab and making sure systems run with simple tests. Second, reproducting the paper's results.
+We will use cloudlab to reproduce the paper's results. Because Shinjuku requires a specific version of Linux 4.4.0, we break down the evaluation in two steps: gathering and plotting results on Shinjuku and Perséphone first, then gathering data for Shenango and updating the plots.
 
 We estimate the entire process to take X amount of time.
-
-**PROTIP**: use a terminal such as [terminator](https://terminator-gtk3.readthedocs.io/en/latest/) to broadcast commands across multiple tabs.
 
 Setting up Perséphone
 =====================
@@ -22,73 +20,6 @@ We will use Clemson's c6420 machines, so make sure that some are [available](htt
 - Upload [this profile](sosp_aec/cloudlab.py)
 
 Now, instantiate a new experiment using the profile. You should be able to login using your cloudlab credentials.
-
-Setting up the cloudlab experiment
--------------------------------
-We will use one server machine and 6 client machines.
-
-### Base setup
-On each machine:
-```bash
-# Install required packages.
-sudo apt-get update && sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y; sudo apt install -y cmake libboost-program-options-dev libboost-system-dev libboost-chrono-dev libboost-context-dev libnuma-dev libyaml-cpp-dev liblz4-dev libgflags-dev libsnappy-dev numactl msr-tools htop libconfig-dev software-properties-common; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y gcc-7 g++-7; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-# Change AE_DIR for the path of your project's NFS directory
-# export AE_DIR=/proj/your_cloudlab_proj_name
-export AE_DIR=/proj/psp-PG0/maxdml
-```
-
-On each machine, take the first NUMA node out of CFS' domain and disable kaslr
-In _/etc/default/grub_, append the following line to the entry "GRUB_CMDLINE_LINUX_DEFAULT"
-> nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
-
-Now let's clone the repo (from any machine):
-```bash
-git clone --recurse-submodules git@github.com:maxdml/Persephone.git ${AE_DIR}/Persephone
-# [TEMP]
-# git checkout sosp_aec
-```
-
-In addition, Shinjuku requires Linux 4.4.0-187, so we will set it up on the *server* machine:
-```bash
-sudo apt install linux-headers-4.4.0-187-generic linux-modules-4.4.0-187-generic linux-image-4.4.0-187-generic
-# Next boot will be on 4.4.0-187
-sudo ${AE_DIR}/Persephone/scripts/setup/pick_kernel.sh 4.4.0-187-generic
-```
-
-Finally reboot all the nodes:
-```bash
-# Update grub to apply these changes
-sudo update-grub; sudo reboot
-```
-
-Check whether the change was correctly applied:
-```bash
-# On each machine (kernel image may vary)
-cat /proc/cmdline
-BOOT_IMAGE=/boot/vmlinuz-4.4.0-210-generic root=UUID=ce184cb1-3771-4a20-b6cd-8e9a4649a561 ro console=ttyS0,115200 nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
-# On the server machine
-$ uname -r
-4.4.0-187-generic
-# export AE_DIR again
-# export AE_DIR=/proj/your_cloudlab_proj_name
-export AE_DIR=/proj/psp-PG0/maxdml
-```
-
-Then, on the server machine:
-```bash
-${AE_DIR}/Persephone/sosp_aec/base_setup.sh
-```
-This script will setup Perséphone, Shinjuku, and other systems used throughout the artifact evaluation.
-
-On *one* of the client machine:
-```bash
-git clone --recurse-submodules git@github.com:maxdml/Persephone.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout clt-light; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
-```
-
-### Create disk images
-We recommend you to snapshot two disk images, one for the clients and one for the server, and modify the cloudlab profile to use these.
-Disk images will save modification to the kernel's command line, installed APT packages, etc.
-To do so, use the _Create Disk Image_ utility in the experiment page on Cloudlab, and update your profile accordingly.
 
 Simple client-server tests
 ---------------------------------

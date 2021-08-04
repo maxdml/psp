@@ -1,8 +1,7 @@
 #!/bin/bash -x
 
-# Checkout synthetic work library
-git clone git@github.com:maxdml/fake_work.git ${AE_DIR}/fake_work
-make -C ${AE_DIR}/fake_work libfake
+# Setup synthetic work library
+make -C ${AE_DIR}/Persephone/submodules/fake_work libfake
 
 # Setup RocksDB
 make -j -C ${AE_DIR}/Persephone/submodules/rocksdb static_lib
