@@ -98,51 +98,36 @@ Throughout this section, we will be using [Shremote](Shremote) to orchestrate ex
 
 Setting up an orchestrator node
 ----------------
-On a machine that is *not* one of the 7 cloudlab nodes, we will set up Shremote and a jupyter notebook. You will use this machine to orchestrate experiments, gather and plot data.
+On a machine that is *not* one of the 7 cloudlab nodes, we will set up an environment to orchestrate experiments, gather and plot data. We provide a docker image to do so.
 
+[Install docker](https://docs.docker.com/engine/install/ubuntu/)  (you might have to restart the docker service before running a container)
+
+Build and start the container:
 ```bash
-sudo apt install python3-pip python3-venv
-python3 -m pip install --user virtualenv
-export AE_DIR=/proj/psp-PG0/maxdml/Persephone
-git clone --recurse-submodules git@github.com:maxdml/Persephone.git ${AE_DIR}
-git submodule update Shremote
-cd ${AE_DIR}
-git checkout sosp_aec
+git clone --recurse-submodules https://github.com/maxdml/psp.git
+sudo docker build -t ubuntu-aec psp/sosp_aec
+sudo docker run -p 8888:8888 ubuntu-aec
 ```
 
-We now need to update Shremote configurations. In ${AE_DIR}/Shremote_cfgs/config, update:
-- ssh_config.yml: fill your credential on the cloudlab machines
-- hosts.yml: update the "addr" for each machine
-- dirs.yml: update the paths for your NFS directory in cloudlab. "shremote_cfgs" for the orchestrator node; "log_dir", "psp_apps" and "clt" for the server and clinet machines, respectively
+Then:
+- Log in the container to configure it `bash sudo docker exec -it IMAGE /bin/bash`
+- Setup your cloudlab private key in the container and set it to 600
+- In /psp/Shremote_cfgs/config, update:
+    - ssh_config.yml: ssh credential to cloudlab
+    - hosts.yml: update "addr" for each machine (e.g., clnode42)
+    - dirs.yml: set "log_dir" to a desirable path on cloudlab for storing results
 
-Send a dummy ssh command from the orchestrator to each of the node to validate their certificate. For example:
+Send a dummy ssh command to each of the node to validate their certificate.
 ```bash
-# ssh -i ~/path/to/your/private/key user@clnode204.clemson.cloudlab.us 'ls /home/'
-ssh -i ~/.ssh/cl2 clnode204.clemson.cloudlab.us 'ls /home/'
+NODES=('236' '237' '229' '223' '240' '227' '244')
+for node in ${NODES[@]}; do ssh -i ~/path/to/your/private/key user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
 
-Let's set up a virtual environment
-```bash
-python3 -m venv env
-source env/bin/activate
-```
-
-Let's test that Shremote works. On the server node
-```bash
-${AE_DIR}Persephone/sosp_aec/base_start.sh Persephone
-```
-
-On the orchestrator node:
-```bash
-```
+Then go to localhost:8888 on your browser. Open the notebook "aec.ipynb"
 
 Figure 3
 --------
 This command will run three experiments, one per scheduling policy.
-
-```bash
-${AE_DIR/Persephone/Shremote_cfgs/run.py 0 psp DISP2 --policies DARC CFCFS DFCFS
-```
 
 Then, run cell #x in the notebook.
 
@@ -185,12 +170,10 @@ I. Setup
 - Check and add Shenango
 
 II. Experiments
-1) Setup shremote and try with the base config
-- Add schedule for the same base test.
-- Test with all systems
 
-2) Notebook & figure 3
-- Add to this branch the python code to parse data
+2) figure 3
+- hide all the plotting code in a module
+- find a way to automate the generation of the file listing all load points.
 
 3) Figure 4
 - Update psp to receive configuration for figure 4
@@ -204,29 +187,17 @@ II. Experiments
 7) Figure 8
 
 III. Public repo
-- psp-light and clt-light branches
-- RocksDB submodule, Shinjuku submodule
-- Remove all obsolete files
-- Remove all MSR licenses
-- Clean up shremote cfg dir and schedules
-- remove my info from ssh_config.yml
+- Cleanup all unneeded files
+- Double check leak of personal info (e.g. ssh_config.yml)
 
 ENHANCEMENTS
 --------------
 - sed /etc/default/grub rather than manual update
-- Generate all yml file for log_dir, remote_mac (sjk client), etc
-- Automate choice of "default" for apt update
-    * apt Dpkg::Options::="--force-confold" upgrade?
-- Provide a cloudlab script for any machine to setup the orchestrator
+- Generate all yml file for remote_mac (sjk client), etc
+- Automate choice of "default" for apt update (curse UI still shows)
 - Change schedule names to match figure numbers?
-- find better names (e.g. for env variables)
 - Note some "good" cloudlab nodes (and maybe bad ones too)
 - Make sure we remind ppl to
-     * select the right kernel when rebooting (insn do 1 time pick)
+     * select the right kernel when rebooting (insn do 1 time pick?)
      * export AE_DIR at startup
-
-
-DOCKER
-----
-- [Install docker](https://docs.docker.com/engine/install/ubuntu/)  (you might have to restart the docker service before running a container)
-- docker pull ubuntu:18.04
+     * base_start and stuff when rebooting
