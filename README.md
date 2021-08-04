@@ -38,7 +38,7 @@ sudo numactl -N0 -m0 ${AE_DIR}/Persephone/build/src/c++/apps/app/psp-app --cfg $
 On one client:
 ```bash
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh client
-sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/Persephone/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
+sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
 If you see an output similar to the one bellow, the system works as expected. You can ignore the Fdir error.
@@ -68,10 +68,10 @@ sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/build_and_run.sh $
 ```
 
 On the client update the server's NIC MAC address in the config file.
-One way to find the NIC MAC ID is through the Cloudlab portal, by clicking on the node. It should be the only 10Gbps NIC.
+One way to find the NIC MAC ID is through the Cloudlab portal, by clicking on the node. It should be the only 10Gbps NIC, eth1.
 In ${AE_DIR}/Persephone/sosp_aec/configs/base_client_sjk_cfg.yml, put that value in the field "remote_mac".
 ```bash
-sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/Persephone/sosp_aec/configs/base_client_sjk_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
+sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
 You should have a similar ouput than for Perséphone if this test worked correctly.
