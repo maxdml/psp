@@ -63,9 +63,8 @@ elif args.system == 'caladan':
 else:
     CFG = os.path.join(DIR, "psp.yml")
 output_paths = []
-#for LOAD in np.arange(.05, 0.91, .05):
-#for LOAD in np.arange(.65, 0.96, .05):
-for LOAD in [0.80]:
+for LOAD in np.arange(.05, 1.06, .05):
+#for LOAD in [0.80]:
     for DP in args.policies:
         TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}.{args.run_number}'
         shremote_args = [
