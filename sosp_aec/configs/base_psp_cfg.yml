@@ -1,0 +1,40 @@
+cpus:
+- 2
+- 4
+- 6
+- 8
+- 10
+- 12
+- 14
+- 16
+- 18
+- 20
+- 22
+- 24
+- 26
+- 28
+- 30
+log_dir: /proj/psp-PG0/maxdml/experiments/
+n_resas: 0
+net_workers:
+- dp: CFCFS
+  ip: 192.168.10.10
+  is_echo: 0
+  port: 6789
+network:
+  device_id: 0
+  eal_init:
+  - -n
+  - '2'
+  - -l
+  - 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
+  - --file-prefix
+  - maxdml
+  - -w
+  - '0000:18:00.1'
+  mac: '42:42:42:42:42:01'
+requests:
+- type: SHORT
+workers:
+  number: 14
+  type: MB

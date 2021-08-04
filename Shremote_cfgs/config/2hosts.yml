@@ -1,0 +1,10 @@
+server:
+    addr: clnode207.clemson.cloudlab.us
+    log_dir: '{0.dirs.log_dir}'
+    dev_num: '0000:18:00.1'
+    ip: 1.1.1.1
+client0:
+    addr: clnode183.clemson.cloudlab.us
+    log_dir: '{0.dirs.log_dir}'
+    dev_num: '0000:18:00.1'
+    ip: 1.1.1.1

@@ -1,0 +1,36 @@
+path: './requests/'
+SHORT:
+    file: $(getarg('short-file', '1000'))$
+    mean_us: $( '{0.params.mean_us}'.split()[0] )$
+    ratio: $( '{0.params.ratios}'.split()[0] )$
+    deadline: $( '{0.params.deadlines}'.split()[0] )$
+LONG:
+    file: $(getarg('long-file', '100000'))$
+    mean_us: $( '{0.params.mean_us}'.split()[1] )$
+    ratio: $( '{0.params.ratios}'.split()[1] )$
+    deadline: $( '{0.params.deadlines}'.split()[1] )$
+NewOrder:
+    file: $( '{0.params.mean_us}'.split()[0] )$
+    mean_us: $( '{0.params.mean_us}'.split()[0] )$
+    ratio: $( '{0.params.ratios}'.split()[0] )$
+    deadline: $( '{0.params.deadlines}'.split()[0] )$
+Payment:
+    file: $( '{0.params.mean_us}'.split()[1] )$
+    mean_us: $( '{0.params.mean_us}'.split()[1] )$
+    ratio: $( '{0.params.ratios}'.split()[1] )$
+    deadline: $( '{0.params.deadlines}'.split()[1] )$
+Delivery:
+    file: $( '{0.params.mean_us}'.split()[2] )$
+    mean_us: $( '{0.params.mean_us}'.split()[2] )$
+    ratio: $( '{0.params.ratios}'.split()[2] )$
+    deadline: $( '{0.params.deadlines}'.split()[2] )$
+OrderStatus:
+    file: $( '{0.params.mean_us}'.split()[3] )$
+    mean_us: $( '{0.params.mean_us}'.split()[3] )$
+    ratio: $( '{0.params.ratios}'.split()[3] )$
+    deadline: $( '{0.params.deadlines}'.split()[3] )$
+StockLevel:
+    file: $( '{0.params.mean_us}'.split()[4] )$
+    mean_us: $( '{0.params.mean_us}'.split()[4] )$
+    ratio: $( '{0.params.ratios}'.split()[4] )$
+    deadline: $( '{0.params.deadlines}'.split()[4] )$

@@ -1,0 +1,41 @@
+*.a
+*.so
+/build/
+
+#git
+*.orig
+
+# vim
+*.swo
+*.swp
+*~
+
+# vscode
+/.vscode/launch.json
+/.vscode/ipch
+/.vscode/*
+
+# gdb
+.gdb.*
+
+# ctags
+tags
+tags.*
+
+# [CMake](https://github.com/github/gitignore/blob/master/CMake.gitignore)
+#
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# Python3 venv
+/scripts/*/venv/
+*pickle
+
+*pdf

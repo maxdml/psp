@@ -1,0 +1,6 @@
+- mean_ns: [500, 500000]
+  ratios: [.995, .005]
+  uniform: false
+  ptype: IX
+  duration: 20
+  rtype: [SHORT, LONG]

@@ -1,0 +1,28 @@
+cpus:
+- 2
+log_dir: /proj/psp-PG0/maxdml/experiments/
+net_workers:
+- ip: 192.168.10.11
+  port: 6789
+network:
+  device_id: 0
+  eal_init:
+  - -n
+  - '2'
+  - -l
+  - 0, 2
+  - --file-prefix
+  - maxdml
+  - -w
+  - '0000:18:00.1'
+  mac: '42:42:42:42:42:02'
+  remote_mac: '42:42:42:42:42:01'
+schedules:
+- cmd_mean_ns:
+  - 1000
+  cmd_ratios:
+  - 1.0
+  duration: 10
+  ptype: PSP_MB
+  rate: 1000000
+  uniform: false

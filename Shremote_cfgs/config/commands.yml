@@ -1,0 +1,54 @@
+commands:
+    - program: psp_app
+      config: '{0.files.server_cfg.dst}'
+      hosts: server
+      begin: 0
+      max_duration: 120 
+
+    - program: psp_rate_client0
+      hosts: client0
+      begin: 50
+      config_file: '{0.files.client0_cfg.dst}'
+      outdir: 'client0'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client1
+      hosts: client1
+      begin: 50
+      config_file: '{0.files.client1_cfg.dst}'
+      outdir: 'client1'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client2
+      hosts: client2
+      begin: 50
+      config_file: '{0.files.client2_cfg.dst}'
+      outdir: 'client2'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client3
+      hosts: client3
+      begin: 50
+      config_file: '{0.files.client3_cfg.dst}'
+      outdir: 'client3'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client4
+      hosts: client4
+      begin: 50
+      config_file: '{0.files.client4_cfg.dst}'
+      outdir: 'client4'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client5
+      hosts: client5
+      begin: 50
+      config_file: '{0.files.client5_cfg.dst}'
+      outdir: 'client5'
+      collect_logs: 1
+      <<: *clt_params

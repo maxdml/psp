@@ -1,0 +1,14 @@
+[submodule "submodules/dpdk"]
+	path = submodules/dpdk
+	url = https://github.com/DPDK/dpdk.git
+    branch = v20.05
+    ignore = dirty
+[submodule "submodules/shinjuku"]
+	path = submodules/shinjuku
+	url = git@github.com:maxdml/shinjuku.git
+[submodule "submodules/rocksdb"]
+	path = submodules/rocksdb
+	url = https://github.com/facebook/rocksdb
+[submodule "submodules/Shremote"]
+	path = submodules/Shremote
+	url = https://github.com/isaac-ped/Shremote.git

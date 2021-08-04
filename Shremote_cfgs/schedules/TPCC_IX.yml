@@ -1,0 +1,6 @@
+- mean_ns: [20000, 5700, 88000, 6000, 100000]
+  ratios: [.44, .44, .04, .04, .04]
+  uniform: false
+  ptype: IX
+  duration: 10
+  rtype: [NewOrder, Payment, Delivery, OrderStatus, StockLevel]

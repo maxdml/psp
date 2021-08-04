@@ -1,0 +1,12 @@
+server_cfg:
+    hosts: server
+    src: '{0.output_dir}/server_cfg.yml'
+    dst: '{host.output_dir}/server/server_cfg.yml'
+client0_cfg:
+    hosts: client0
+    src: '{0.output_dir}/client_cfg.yml.0'
+    dst: '{host.output_dir}/client0/client_cfg.yml'
+client_cmds_dir:
+    hosts: [client0]
+    src: '{0.output_dir}/client_cmds/'
+    dst: '{host.output_dir}/client_cmds/'

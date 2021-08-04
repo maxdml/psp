@@ -1,0 +1,18 @@
+- mean_ns: [1000, 10000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 10000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 15
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 15
+  rtype: [SHORT, LONG]

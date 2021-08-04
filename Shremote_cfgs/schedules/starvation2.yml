@@ -1,0 +1,54 @@
+- mean_ns: [1000, 100000]
+  ratios: [.999, .001]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.998, .002]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.995, .005]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.99, .01]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.975, .025]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.925, .075]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.9, .1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.85, .15]
+  uniform: false
+  ptype: PSP_MB
+  duration: 5
+  rtype: [SHORT, LONG]

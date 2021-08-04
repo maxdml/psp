@@ -1,0 +1,155 @@
+# This takes one schedule parameters as arguments
+psp_default: &PSP_DEFAULT
+    start: >-
+        sudo numactl -N0 -m0 {0.dirs.clt}/client/client
+        --config-path {config_file}
+        --duration {duration}
+        --label {0.label}
+        --ip {srv_ip}
+        --port {srv_port}
+        --max-concurrency {max_clt_cc}
+        --sample {downsample}
+        --rate {rate}
+        --cmd-list {cmd_list}
+        --cmd-ratios {cmd_ratios}
+        --outdir {outdir}
+        --mb-reqs
+        --collect-logs {collect_logs}
+    stop: sudo kill {pid}
+    check_rtn: 0
+
+psp_no_sched: &PSP_NO_SCHED
+    start: >-
+        sudo numactl -N0 -m0 {0.dirs.clt}/client/client
+        --config-path {config_file}
+        --label {0.label}
+        --ip {srv_ip}
+        --port {srv_port}
+        --max-concurrency {max_clt_cc}
+        --sample {downsample}
+        --collect-logs {collect_logs}
+        --outdir {outdir}
+    stop: sudo kill {pid}
+    check_rtn: 0
+
+shinjuku:
+    start: >-
+        numactl -N0 -m0 /opt/shinjuku/build_and_run.sh
+    stop: sudo killall shinjuku
+    check_rtn: 0
+    log:
+        dir: server
+        log: server
+        out: server.out
+        err: server.err
+
+psp_app:
+    start: >-
+        sudo numactl -N0 -m0 {0.dirs.psp_apps}/app/psp-app
+        --cfg {config}
+        --label {0.label}
+    stop: sudo kill {pid}
+    check_rtn: 0
+    log:
+        dir: server
+        log: server
+        out: server.out
+        err: server.err
+
+psp_rate_client_old0:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client0
+        log: client0
+        out: client.out
+        err: client.err
+
+psp_rate_client_old1:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client1
+        log: client1
+        out: client.out
+        err: client.err
+
+psp_rate_client_old2:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client2
+        log: client2
+        out: client.out
+        err: client.err
+
+psp_rate_client_old3:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client3
+        log: client3
+        out: client.out
+        err: client.err
+
+psp_rate_client_old4:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client4
+        log: client4
+        out: client.out
+        err: client.err
+
+psp_rate_client_old5:
+    <<: *PSP_DEFAULT
+    log:
+        append: 1
+        dir: client5
+        log: client5
+        out: client.out
+        err: client.err
+
+psp_rate_client0:
+    <<: *PSP_NO_SCHED
+    log:
+        append: 1
+        dir: client0
+        log: client0
+        out: client.out
+        err: client.err
+psp_rate_client1:
+    <<: *PSP_NO_SCHED
+    log:
+        dir: client1
+        log: client1
+        out: client.out
+        err: client.err
+psp_rate_client2:
+    <<: *PSP_NO_SCHED
+    log:
+        dir: client2
+        log: client2
+        out: client.out
+        err: client.err
+psp_rate_client3:
+    <<: *PSP_NO_SCHED
+    log:
+        dir: client3
+        log: client3
+        out: client.out
+        err: client.err
+psp_rate_client4:
+    <<: *PSP_NO_SCHED
+    log:
+        dir: client4
+        log: client4
+        out: client.out
+        err: client.err
+psp_rate_client5:
+    <<: *PSP_NO_SCHED
+    log:
+        dir: client5
+        log: client5
+        out: client.out
+        err: client.err

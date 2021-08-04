@@ -1,0 +1,120 @@
+- mean_ns: [100000, 1000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [3500]
+  ratios: [1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT]
+- mean_ns: [100000, 1000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [3500]
+  ratios: [1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT]
+- mean_ns: [100000, 1000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [3500]
+  ratios: [1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT]
+- mean_ns: [100000, 1000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [3500]
+  ratios: [1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT]
+- mean_ns: [100000, 1000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.5, .5]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [1000, 100000]
+  ratios: [.95, .05]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT, LONG]
+- mean_ns: [3500]
+  ratios: [1]
+  uniform: false
+  ptype: PSP_MB
+  duration: 2
+  rtype: [SHORT]
