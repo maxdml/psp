@@ -20,6 +20,7 @@ int MbWorker::process_request(unsigned long payload) {
 
     //uint32_t spin_time = 1000;
     unsigned int nloops = *reinterpret_cast<unsigned int *>(req_addr) * FREQ;
+    PSP_DEBUG("spinning for " << nloops);
     /*
     printf("spinning for %u\n", nloops);
     double durations[1000];

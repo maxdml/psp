@@ -162,22 +162,22 @@ Psp::Psp(std::string &app_cfg, std::string l) {
 
             memset(dpt.windows, 0, sizeof(profiling_windows) * MAX_WINDOWS);
 
-            if (dpt.dp != Dispatcher::dispatch_mode::DYN_RESA) {
+            if (dpt.dp != Dispatcher::dispatch_mode::DARC) {
                 dpt.first_resa_done = true;
             } else {
-#ifdef DARC
                 /* We first start in cFCFS */
                 dpt.dp = Dispatcher::dispatch_mode::CFCFS;
                 dpt.first_resa_done = false;
-#endif
                 /* Microbench reservation update overheads
                 double durations[1000];
                 for (int i = 0; i < 1000; ++i) {
                     uint64_t start = rdtscp(NULL);
                 */
+                //Assume we started with an oracle
                 if (req_types[0]["mean_ns"].IsDefined()) {
-                    //Assume we started with an oracle
                     dpt.set_darc();
+                    dpt.dp = Dispatcher::dispatch_mode::DARC;
+                    dpt.first_resa_done = true;
                 }
                 /*
                     uint64_t end = rdtscp(NULL);

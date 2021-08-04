@@ -210,13 +210,13 @@ int Dispatcher::signal_free_worker(int peer_id, unsigned long notif) {
     /* Update service time and count */
     uint32_t type = notif >> 60;
     auto &t = rtypes[type_to_nsorder[type]];
-#ifdef DARC
-    uint64_t cplt_tsc = notif & (0xfffffffffffffff);
-    uint64_t service_time = cplt_tsc - peer_dpt_tsc[peer_id];
-    t->windows_mean_ns = (service_time + (t->windows_mean_ns * t->windows_count)) / (t->windows_count + 1);
-    t->windows_count++;
-    windows[n_windows].count++;
-#endif
+    if (dp == DARC) {
+        uint64_t cplt_tsc = notif & (0xfffffffffffffff);
+        uint64_t service_time = cplt_tsc - peer_dpt_tsc[peer_id];
+        t->windows_mean_ns = (service_time + (t->windows_mean_ns * t->windows_count)) / (t->windows_count + 1);
+        t->windows_count++;
+        windows[n_windows].count++;
+    }
     free_peers |= (1 << peer_id);
     return 0;
 }
@@ -266,37 +266,37 @@ inline int Dispatcher::push_to_rqueue(unsigned long req, RequestType *&rtype, ui
 }
 
 int Dispatcher::dispatch() {
-#ifdef DARC
-    /* If dp is DARC, do we need to update reservations? */
-    uint64_t cur_tsc = rdtscp(NULL);
-    if (unlikely(not first_resa_done)) {
-        if (num_dped > RESA_SAMPLES_NEEDED) {
-            windows[n_windows].tsc_start = cur_tsc;
-            windows[n_windows].count = num_dped;
-            dp = DYN_RESA;
-            first_resa_done = true;
-            PSP_OK(update_darc());
-        }
-    //} else if ((cur_tsc - windows[n_windows].tsc) > UPDATE_PERIOD and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
-    } else if (windows[n_windows].count > RESA_SAMPLES_NEEDED) {
-        for (uint32_t i = 0; i < n_rtypes; ++i) {
-            if ((rtypes[i]->rqueue_head - rtypes[i]->rqueue_tail) < 2)
-                continue;
-            uint64_t d = rtypes[i]->tsqueue[(rtypes[i]->rqueue_tail + 1) & (RQUEUE_LEN - 1)];
-            rtypes[i]->delay = cur_tsc - d;
-            if (rtypes[i]->delay > rtypes[i]->max_delay) {
-                PSP_DEBUG(
-                    "[UPDATE_PERIOD] updating type "
-                    << req_type_str[static_cast<int>(rtypes[i]->type)]
-                    << " because delay " << rtypes[i]->delay / FREQ
-                    << " is greater than " << rtypes[i]->max_delay / FREQ
-                );
+    if (dp == DARC) {
+        /* If dp is DARC, do we need to update reservations? */
+        uint64_t cur_tsc = rdtscp(NULL);
+        if (unlikely(not first_resa_done)) {
+            if (num_dped > RESA_SAMPLES_NEEDED) {
+                windows[n_windows].tsc_start = cur_tsc;
+                windows[n_windows].count = num_dped;
+                dp = DARC;
+                first_resa_done = true;
                 PSP_OK(update_darc());
-                break;
+            }
+        //} else if ((cur_tsc - windows[n_windows].tsc) > UPDATE_PERIOD and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
+        } else if (windows[n_windows].count > RESA_SAMPLES_NEEDED) {
+            for (uint32_t i = 0; i < n_rtypes; ++i) {
+                if ((rtypes[i]->rqueue_head - rtypes[i]->rqueue_tail) < 2)
+                    continue;
+                uint64_t d = rtypes[i]->tsqueue[(rtypes[i]->rqueue_tail + 1) & (RQUEUE_LEN - 1)];
+                rtypes[i]->delay = cur_tsc - d;
+                if (rtypes[i]->delay > rtypes[i]->max_delay) {
+                    PSP_DEBUG(
+                        "[UPDATE_PERIOD] updating type "
+                        << req_type_str[static_cast<int>(rtypes[i]->type)]
+                        << " because delay " << rtypes[i]->delay / FREQ
+                        << " is greater than " << rtypes[i]->max_delay / FREQ
+                    );
+                    PSP_OK(update_darc());
+                    break;
+                }
             }
         }
     }
-#endif
 
     /* Check for work completion signals */
     unsigned long notif;
@@ -354,7 +354,7 @@ int Dispatcher::dispatch() {
                 */
             }
         }
-    } else if (dp == DYN_RESA) {
+    } else if (dp == DARC) {
         for (uint32_t i = 0; i < n_rtypes; ++i) {
             if (rtypes[i]->rqueue_head > rtypes[i]->rqueue_tail) {
                 dyn_resa_drain_queue(rtypes[i]);
@@ -415,9 +415,8 @@ int Dispatcher::dyn_resa_drain_queue(RequestType *&rtype) {
             num_dped++;
             rtype->rqueue_tail++;
             free_peers ^= (1 << peer_id);
-#ifdef DARC
-            peer_dpt_tsc[peer_id] = cur_tsc;
-#endif
+            if (dp == DARC)
+                peer_dpt_tsc[peer_id] = cur_tsc;
             /*
             PSP_DEBUG(
                 "Picked peer " << peer_id << " . " << __builtin_popcount(free_peers) << " free peers"

@@ -11,7 +11,6 @@
 #define RESA_SAMPLES_NEEDED 5e4
 #define UPDATE_PERIOD 5 * 1e3 * FREQ //5 usec
 #define MAX_WINDOWS 8192
-#define DARC
 
 struct profiling_windows {
     uint64_t tsc_start;
@@ -31,7 +30,7 @@ class Dispatcher : public Worker {
         DFCFS = 0,
         CFCFS,
         SJF,
-        DYN_RESA,
+        DARC,
         EDF,
         UNKNOWN
     };
@@ -40,7 +39,7 @@ class Dispatcher : public Worker {
         "DFCFS",
         "CFCFS",
         "SJF",
-        "DYN-RESA",
+        "DARC",
         "EDF",
         "UNKNOWN"
     };
@@ -52,8 +51,8 @@ class Dispatcher : public Worker {
             return dispatch_mode::DFCFS;
         } else if (dp == "SJF") {
             return dispatch_mode::SJF;
-        } else if (dp == "DYN-RESA") {
-            return dispatch_mode::DYN_RESA;
+        } else if (dp == "DARC") {
+            return dispatch_mode::DARC;
         } else if (dp == "EDF") {
             return dispatch_mode::EDF;
         }
@@ -129,30 +128,30 @@ class Dispatcher : public Worker {
         );
         delete rtypes[type_to_nsorder[0]];
 
-#ifdef DARC
-        // Record windows statistics
-        std::string path = generate_log_file_path(label, "server/windows");
-        std::cout << "dpt log at " << path << std::endl;
-        std::ofstream output(path);
-        if (not output.is_open()) {
-            PSP_ERROR("COULD NOT OPEN " << path);
-        } else {
-            output << "ID\tSTART\tEND\tGID\tRES\tSTEAL\tCOUNT\tUPDATED\tQLEN" << std::endl;
-            for (size_t i = 0; i < n_windows; ++i) {
-                auto &w = windows[i];
-                for (size_t j = 0; j < n_rtypes; ++j) {
-                    output << i << "\t" << std::fixed << w.tsc_start / FREQ
-                           << "\t" << std::fixed << w.tsc_end / FREQ
-                           << "\t" << j
-                           << "\t" << w.group_res[j] << "\t" << w.group_steal[j]
-                           << "\t" << w.counts[j] << "\t" << w.do_update
-                           << "\t" << w.qlen[j]
-                           << std::endl;
-                }
-            }
-            output.close();
+        if (dp == DARC) {
+             // Record windows statistics
+             std::string path = generate_log_file_path(label, "server/windows");
+             std::cout << "dpt log at " << path << std::endl;
+             std::ofstream output(path);
+             if (not output.is_open()) {
+                 PSP_ERROR("COULD NOT OPEN " << path);
+             } else {
+                 output << "ID\tSTART\tEND\tGID\tRES\tSTEAL\tCOUNT\tUPDATED\tQLEN" << std::endl;
+                 for (size_t i = 0; i < n_windows; ++i) {
+                     auto &w = windows[i];
+                     for (size_t j = 0; j < n_rtypes; ++j) {
+                         output << i << "\t" << std::fixed << w.tsc_start / FREQ
+                                << "\t" << std::fixed << w.tsc_end / FREQ
+                                << "\t" << j
+                                << "\t" << w.group_res[j] << "\t" << w.group_steal[j]
+                                << "\t" << w.counts[j] << "\t" << w.do_update
+                                << "\t" << w.qlen[j]
+                                << std::endl;
+                     }
+                 }
+                 output.close();
+             }
         }
-#endif
     }
 };
 
