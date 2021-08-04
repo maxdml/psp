@@ -12,13 +12,11 @@ class MbWorker : public Worker {
     public: MbWorker() : Worker(WorkerType::MBK) {}
     public : ~MbWorker() {
                 log_info(
-                    "MB worker %d processed %u requests (%u shorts, %u longs), dropped %lu requests",
-                    worker_id, n_requests, n_shorts, n_longs, n_drops
+                    "MB worker %d processed %u requests (%lu batches), dropped %lu requests",
+                    worker_id, n_requests, n_batchs_rcvd, n_drops
                 );
              }
     private: uint32_t n_requests = 0;
-    private: uint32_t n_shorts = 0;
-    private: uint32_t n_longs = 0;
     private: int setup() override;
     private: int dequeue(unsigned long *payload);
     private: int work(int status, unsigned long payload) override;

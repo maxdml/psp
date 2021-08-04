@@ -35,9 +35,9 @@ int UdpContext::send_packets() {
     rte_mbuf *pkts[MAX_TX_BURST];
     while (push_head > push_tail && nb_pkts < MAX_TX_BURST) {
         PSP_OK(prepare_outbound_packet(
-            outbound_queue[push_tail++ & (OUTBOUND_Q_LEN - 1)],
-            &pkts[nb_pkts++]
-        ));
+                    outbound_queue[push_tail++ & (OUTBOUND_Q_LEN - 1)],
+                    &pkts[nb_pkts++]
+                    ));
     }
     if (likely(nb_pkts > 0)) {
         size_t count = ::rte_eth_tx_burst(port_id, id, pkts, nb_pkts);
@@ -55,10 +55,10 @@ T* pktmbuf_struct_read(const rte_mbuf *pkt, size_t offset, T& buf) {
 }
 
 int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) {
-	rte_mbuf *pkt = static_cast<rte_mbuf *>((void *)mbuf);
-	PSP_NOTNULL(ENOMEM, pkt);
+    rte_mbuf *pkt = static_cast<rte_mbuf *>((void *)mbuf);
+    PSP_NOTNULL(ENOMEM, pkt);
 
-	size_t hdr_offset = 0;
+    size_t hdr_offset = 0;
     char *pkt_start = rte_pktmbuf_mtod(pkt, char*);
 
     auto *eth_hdr = rte_pktmbuf_mtod_offset(pkt, rte_ether_hdr *, hdr_offset);
@@ -68,14 +68,13 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     auto *udp_hdr = rte_pktmbuf_mtod_offset(pkt, rte_udp_hdr *, hdr_offset);
     hdr_offset += sizeof(*udp_hdr);
     char *data_start = rte_pktmbuf_mtod_offset(pkt, char *, hdr_offset);
-    char *data_offset = data_start + sizeof(uint32_t) * 3; // request ID + resquest type + response size
-    data_offset += *(uint32_t *)data_offset; // payload size
+    char *data_offset = data_start + pkt->l4_len; // XXX dirty trick
     size_t data_len = (data_offset - data_start);
     size_t total_len = (data_offset - pkt_start);
 
-    // Use our local port as source
-    udp_hdr->dst_port = udp_hdr->src_port;
+    // Just swap request headers
     udp_hdr->src_port = htons(port);
+    udp_hdr->dst_port = htons(remote_port);
     uint16_t udp_len = static_cast<uint16_t>(data_len + sizeof(*udp_hdr));
     udp_hdr->dgram_len = htons(udp_len);
     pkt->l4_len = sizeof(*udp_hdr);
@@ -85,17 +84,15 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     ip_hdr->version_ihl = IP_VHL_DEF;
     ip_hdr->time_to_live = IP_DEFTTL;
     ip_hdr->next_proto_id = IPPROTO_UDP;
-
-    ip_hdr->dst_addr = ip_hdr->src_addr;
     ip_hdr->src_addr = ip.s_addr;
-    pkt->ol_flags = 0x0;
+    ip_hdr->dst_addr = remote_ip.s_addr;
+    pkt->l3_len = sizeof(*ip_hdr);
 #ifdef OFFLOAD_IP_CKSUM
     pkt->ol_flags |= PKT_TX_IP_CKSUM;
 #endif
-    pkt->l3_len = sizeof(*ip_hdr);
 
-    eth_hdr->d_addr = eth_hdr->s_addr;
     eth_hdr->s_addr = my_mac;
+    eth_hdr->d_addr = remote_mac;
     eth_hdr->ether_type = htons(RTE_ETHER_TYPE_IPV4);
     pkt->l2_len = sizeof(*eth_hdr);
 
@@ -109,8 +106,8 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     char dst_buf[RTE_ETHER_ADDR_FMT_SIZE];
     rte_ether_format_addr(src_buf, RTE_ETHER_ADDR_FMT_SIZE, &eth_hdr->s_addr);
     rte_ether_format_addr(dst_buf, RTE_ETHER_ADDR_FMT_SIZE, &eth_hdr->d_addr);
-    printf("[context %d]send: src eth addr: %s\n", id, src_buf);
-    printf("[context %d]send: dst eth addr: %s\n", id, dst_buf);
+    printf("send: eth src addr: %s\n", src_buf);
+    printf("send: eth dst addr: %s\n", dst_buf);
 
     printf("===== Send: IP header =====\n");
     printf("send: ip src addr: %x\n", ntohl(ip_hdr->src_addr));
@@ -127,13 +124,14 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     rte_pktmbuf_dump(stderr, pkt, pkt->pkt_len);
     printf("====================\n");
 #endif
-
     *pkt_out = pkt;
     return 0;
 }
 
 int UdpContext::parse_packet(struct rte_mbuf *pkt) {
 #ifdef NET_DEBUG
+    printf("========= RECV ===========\n");
+    rte_pktmbuf_dump(stderr, pkt, pkt->pkt_len);
 	// Check Ethernet header
     size_t offset = 0;
     ::rte_ether_hdr eth_buf;
@@ -141,16 +139,15 @@ int UdpContext::parse_packet(struct rte_mbuf *pkt) {
     offset += sizeof(*eth_hdr);
     auto eth_type = ntohs(eth_hdr->ether_type);
 
-    printf("====================\n");
     std::cout << "using mbuf: " << pkt << std::endl;
-    printf("recv: pkt len: %d\n", pkt->pkt_len);
-    printf("recv: eth src addr: ");
+    printf("[context %d]recv: pkt len: %d\n", id, pkt->pkt_len);
+    printf("[context %d]recv: eth src addr: ", id);
     PSP_OK(print_ether_addr(stdout, eth_hdr->s_addr));
     printf("\n");
-    printf("recv: eth dst addr: ");
+    printf("[context %d]recv: eth dst addr: ", id);
     PSP_OK(print_ether_addr(stdout, eth_hdr->d_addr));
     printf("\n");
-    printf("recv: eth type: %x\n", eth_type);
+    printf("[context %d]recv: eth type: %x\n", id, eth_type);
 
     // Check if destination MAC address is ours or a broadcast address
     if (!rte_is_same_ether_addr(&my_mac, &eth_hdr->d_addr)
@@ -176,14 +173,14 @@ int UdpContext::parse_packet(struct rte_mbuf *pkt) {
     in_addr_t ipv4_dst_addr = ip_hdr->dst_addr;
 
     if (IPPROTO_UDP != ip_hdr->next_proto_id) {
-        printf("recv: dropped (not UDP, instead %d)!\n", (int)ip_hdr->next_proto_id);
+        printf("[context %d]recv: dropped (not UDP, instead %d)!\n", id, (int)ip_hdr->next_proto_id);
         rte_pktmbuf_free(pkt);
         return 0;
     }
 
-    printf("recv: ip src addr: %x\n", ntohl(ipv4_src_addr));
-    printf("recv: ip dst addr: %x\n", ntohl(ipv4_dst_addr));
-    printf("recv: ip tot len: %i\n", ntohs(ip_hdr->total_length));
+    printf("[context %d]recv: ip src addr: %x\n", id, ntohl(ipv4_src_addr));
+    printf("[context %d]recv: ip dst addr: %x\n", id, ntohl(ipv4_dst_addr));
+    printf("[context %d]recv: ip tot len: %i\n", id, ntohs(ip_hdr->total_length));
 
     // check udp header
     ::rte_udp_hdr udp_hdr_buf;
@@ -192,18 +189,18 @@ int UdpContext::parse_packet(struct rte_mbuf *pkt) {
     // In network byte order.
     in_port_t udp_src_port = udp_hdr->src_port;
     in_port_t udp_dst_port = udp_hdr->dst_port;
+    printf("[context %d]recv: udp src port: %d\n", id, ntohs(udp_src_port));
+    printf("[context %d]recv: udp dst port: %d\n", id, ntohs(udp_dst_port));
+    printf("[context %d]recv: udp len: %d\n", id, ntohs(udp_hdr->dgram_len));
+    printf("[context %d]recv: udp cksum: %u\n", id, udp_hdr->dgram_cksum);
     if (ntohs(udp_dst_port) != port) {
         printf(
-            "dropping packet (dst port: %u != %u)",
-            ntohs(udp_dst_port), port
+            "[context %d] dropping packet (dst port: %u != %u)",
+            id, ntohs(udp_dst_port), port
         );
         rte_pktmbuf_free(pkt);
         return 0;
     }
-    printf("recv: udp src port: %d\n", ntohs(udp_src_port));
-    printf("recv: udp dst port: %d\n", ntohs(udp_dst_port));
-    printf("recv: udp cksum: %u\n", udp_hdr->dgram_cksum);
-    rte_pktmbuf_dump(stderr, pkt, pkt->pkt_len);
 #endif
 
     inbound_queue[pop_head++ & (INBOUND_Q_LEN - 1)] = (unsigned long) (void *) pkt;
@@ -222,9 +219,9 @@ int UdpContext::init_mempool(struct rte_mempool **mempool_out,
         0,
         MBUF_DATA_SIZE,
         numa_socket_id,
-        "ring_mp_sc"
+        "ring_mp_mc"
     );
-    PSP_NOTNULL(EPERM, mempool_out);
+    PSP_NOTNULL(EPERM, *mempool_out);
     PSP_TRUE(EINVAL, (*mempool_out)->cache_size == MBUF_CACHE_SIZE);
 
     log_debug("Created mempool %s of size (%d * %d) * (%d)  = %d Bytes",
@@ -248,7 +245,7 @@ int UdpContext::set_fdir() {
     inet_aton(subnet, &saddr);
     uint32_t src_mask, dst_mask;
     src_mask = 0x0;
-    dst_mask = 0xffffffff;
+    dst_mask = 0xffffffff; // One destination IP
     //uint8_t src_mask_bits = ceil(log(src_mask) / log(2));
     uint8_t src_mask_bits = 0;
     uint8_t dst_mask_bits = ceil(log(dst_mask) / log(2));
@@ -256,27 +253,44 @@ int UdpContext::set_fdir() {
     struct rte_flow_error error;
 
     /* Generate an ingress rule for the context's rx queue */
-    PSP_INFO("Attempting to register new ingress rule on rxq " << id);
-    PSP_INFO(
-        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) <<
-        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << " -> rxq " <<  id
+    PSP_DEBUG("Attempting to register new ingress rule on rxq " << id);
+    PSP_DEBUG(
+        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) << ": 0" <<
+        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << ": " << port <<
+        "--> rxq " << id
     );
+
+    struct rte_eth_ntuple_filter ntuple_filter;
+    ntuple_filter.src_ip = htonl(saddr.s_addr);
+    ntuple_filter.dst_ip = ip.s_addr; // Stored in network order
+    ntuple_filter.src_ip_mask = src_mask;
+    ntuple_filter.dst_ip_mask = dst_mask;
+    ntuple_filter.proto = IPPROTO_UDP;
+    ntuple_filter.proto_mask = 0xff;
+    ntuple_filter.src_port = 0x0;
+    ntuple_filter.dst_port = RTE_BE16(port); // Stored in host order
+    ntuple_filter.src_port_mask = 0x0;
+    ntuple_filter.dst_port_mask = 0xffff;
+
+    rte_ether_addr src_mac = {
+        .addr_bytes = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+    };
+
     struct rte_flow *flow = generate_ipv4_flow(
-        port_id, id,
-        saddr.s_addr, src_mask, ip.s_addr, dst_mask,
-        &error
+        port_id, id, ntuple_filter, &error
     );
     if (!flow) {
         PSP_ERROR("Flow can't be created. Error " << error.type
-                  << ", message: " << error.message);//? error.message : "(no stated reason)");
+                  << ", message: " << error.message);
         return ENOTRECOVERABLE;
     }
     flows.push_back(flow);
 
     PSP_INFO("Registered new ingress rule:");
     PSP_INFO(
-        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) <<
-        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << " -> rxq " <<  id
+        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) << ":0" <<
+        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << " :" << port <<
+        "--> rxq " << id
     );
 
     return 0;

@@ -27,7 +27,6 @@ int main (int argc, char *argv[]) {
     /* Join threads */
     for (unsigned int i = 0; i < total_workers; ++i) {
         workers[i]->join();
-        delete workers[i];
     }
 
     return 0;

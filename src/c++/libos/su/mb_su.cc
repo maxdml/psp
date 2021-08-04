@@ -1,6 +1,5 @@
 #include <psp/libos/su/MbSu.hh>
 #include <arpa/inet.h>
-#include "fake_work.h"
 
 int MbWorker::setup() {
     assert(n_peers > 0);
@@ -18,37 +17,26 @@ int MbWorker::process_request(unsigned long payload) {
     char *type_addr = id_addr + sizeof(uint32_t);
     char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
+    uint32_t i = 0;
     //uint32_t spin_time = 1000;
-    unsigned int nloops = *reinterpret_cast<unsigned int *>(req_addr) * FREQ;
-    /*
-    printf("spinning for %u\n", nloops);
-    double durations[1000];
-    for (unsigned int i = 0 ; i < 1000; i++) {
-        uint64_t start = rdtscp(NULL);
-    */
-        fake_work(nloops);
-    /*
-        uint64_t end = rdtscp(NULL);
-        durations[i] = (end - start) / 2.5;
+    uint32_t spin_time = *reinterpret_cast<uint32_t *>(req_addr);
+    uint32_t nloops = spin_time * 2593; //XXX adjust this based on your CPU speed
+    log_debug("spinning for %u (%u loops)", spin_time, nloops);
+
+    //uint64_t start = rdtscp(NULL);
+    for (i = 0; i < nloops; ++i) {
+        asm volatile("nop");
     }
-    std::sort(durations, durations+1000);
-    printf("median: %f\n", durations[500]);
-    printf("p99.9: %f\n", durations[999]);
+
+    /*
+    uint64_t end = rdtscp(NULL);
+
+    std::cout << "Spinned for " << (end - start) / 2.5 << " ns, " << std::endl;
+    std::cout << "=====================================" << std::endl;
     */
-    uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
-    switch(static_cast<ReqType>(type)) {
-        case ReqType::SHORT:
-            n_shorts++;
-            break;
-        case ReqType::LONG:
-            n_longs++;
-            break;
-        default:
-            break;
-    }
     n_requests++;
 
-    // Hack response to include completion timestamp
+    // Set response size to 0
     *reinterpret_cast<uint32_t *> (req_addr) = 0;
     return 0;
 }

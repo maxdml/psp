@@ -13,7 +13,5 @@ file(GLOB LIBOS_SRC
 message(STATUS ${LIBOS_SRC})
 
 add_library(psp-libos STATIC ${LIBOS_SRC})
-target_link_libraries(psp-libos psp-common boost_program_options boost_context boost_system boost_chrono -lnuma yaml-cpp psp-time pthread)
+target_link_libraries(psp-libos psp-common boost_program_options boost_context boost_coroutine boost_system boost_chrono -lnuma yaml-cpp psp-time pthread)
 target_add_dpdk(psp-libos)
-target_add_fake_work(psp-libos)
-target_add_rocksdb(psp-libos)

@@ -1,7 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 #ifndef PSP_TIME_H_IS_INCLUDED
 #define PSP_TIME_H_IS_INCLUDED
 
-#define FREQ 2.5
+#define FREQ 2.2
 
 #include <asm/ops.h>
 #include <boost/chrono.hpp>

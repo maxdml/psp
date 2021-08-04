@@ -31,7 +31,7 @@
 #define OUTBOUND_Q_LEN 128
 
 // Offloads
-//#define OFFLOAD_IP_CKSUM
+#define OFFLOAD_IP_CKSUM
 
 // Protocol related variables
 #define NET_HDR_SIZE 42 // ETH(14) + IP(20) + UDP(8)
@@ -50,12 +50,17 @@ class UdpContext {
     private: std::vector<rte_flow *> flows;
 
     public: const in_addr ip;
-    public: uint16_t port;
+    public: const uint16_t port;
     public: uint16_t port_id; /** < NIC device id */
+    public: uint16_t remote_port;
+    public: in_addr remote_ip;
     private: static constexpr rte_ether_addr ether_broadcast = {
         .addr_bytes = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
     };
     private: rte_ether_addr my_mac;
+
+    private: struct rte_ether_addr src_mac = {};
+    public: struct rte_ether_addr remote_mac = {};
 
     private: struct rte_mempool *mbuf_pool;
     private: int init_mempool(struct rte_mempool **mempool_out,
@@ -96,7 +101,49 @@ class UdpContext {
             }
             mbuf_pool = *mempool;
             rte_ether_unformat_addr(mac.c_str(), &my_mac);
-            rte_eth_dev_mac_addr_add(port_id, my_mac);
+            ret = rte_eth_dev_mac_addr_add(port_id, my_mac);
+            if (ret != 0)
+                PSP_PANIC("Could not add a new MAC address to the device");
+        }
+
+        ~UdpContext() {
+#ifdef NET_DEBUG
+            char fname[18];
+            snprintf(fname, 18, "/tmp/f_%d", id);
+            FILE *f = fopen(fname, "w");
+            if (!f)
+                PSP_ERROR("Could not open " << fname);
+            rte_flow_dev_dump(port_id, f, NULL);
+            fclose(f);
+#endif
+            struct rte_flow_error e;
+            for (auto &flow: flows) {
+                struct rte_flow_error e;
+                struct rte_flow_action action[2];
+                struct rte_flow_query_count count;
+                count.reset = 1;
+                count.hits_set = 1;
+                count.bytes_set = 1;
+                count.hits = 0;
+                count.bytes = 0;
+                struct rte_flow_action count_action = { RTE_FLOW_ACTION_TYPE_COUNT, &count};
+                action[0] = count_action;
+                action[1].type = RTE_FLOW_ACTION_TYPE_END;
+                int rtn = rte_flow_query(port_id, flow, action, static_cast<void *>(&count), &e);
+                if (rtn) {
+                   printf("Flow can't be queried %d message: %s\n",
+                          e.type, e.message ? e.message : "(no stated reason)");
+                }
+                if (count.hits_set && count.bytes_set) {
+                    printf("Flow rule for ctx was hit %ld times and %ld bytes flew through it\n",
+                            count.hits, count.bytes);
+                } else {
+                    printf("No flow stats available\n");
+                }
+                rtn = rte_flow_destroy(port_id, flow, &e);
+                if (rtn != 0)
+                    PSP_PANIC("Could not destroy flow");
+            }
         }
 };
 #endif //PSP_UDP_DPDK_HH_

@@ -3,18 +3,14 @@
 
 #include <psp/libos/persephone.hh>
 #include <psp/libos/su/NetSu.hh>
-#include <psp/libos/su/RocksdbSu.hh>
 
 #include <arpa/inet.h>
 
-#include <random>
 #include <fstream>
 
 namespace po = boost::program_options;
 
 class PspApp {
-    private: rocksdb_t *rocks_db;
-
     /* libOS instance */
     public: std::unique_ptr<Psp> psp;
 
@@ -53,39 +49,6 @@ class PspApp {
 
         /* Pin main thread */
         pin_thread(pthread_self(), 0);
-
-        // If this is a RocksDB app
-        Worker *rdb_workers[MAX_WORKERS];
-        uint32_t ntds = psp->get_workers(WorkerType::RDB, rdb_workers);
-        if (ntds > 0) {
-            // Init RocksDB options
-            rocksdb_options_t *options = rocksdb_options_create();
-            rocksdb_options_set_allow_mmap_reads(options, 1);
-            rocksdb_options_set_allow_mmap_writes(options, 1);
-            rocksdb_slicetransform_t * prefix_extractor = rocksdb_slicetransform_create_fixed_prefix(8);
-            rocksdb_options_set_prefix_extractor(options, prefix_extractor);
-            rocksdb_options_set_plain_table_factory(options, 0, 10, 0.75, 3);
-            rocksdb_options_increase_parallelism(options, 0);
-            rocksdb_options_optimize_level_style_compaction(options, 0);
-            rocksdb_options_set_create_if_missing(options, 1);
-
-            // Open DB
-            char *err = NULL;
-            char DBPath[] = "/tmp/my_db";
-            rocks_db = rocksdb_open(options, DBPath, &err);
-            if (err) {
-                PSP_ERROR("Could not open RocksDB database: " << err);
-                exit(1);
-            }
-            for (unsigned int i = 0; i < ntds; ++i) {
-                dynamic_cast<RdbWorker *>(rdb_workers[i])->db = rocks_db;
-            }
-
-            //options->rep.env->thread_pools_.clear();
-            //env->threads_to_join_.clear();
-            PSP_INFO("Initialized RocksDB");
-            return;
-        }
     }
 };
 

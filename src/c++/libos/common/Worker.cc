@@ -55,14 +55,11 @@ int Worker::app_work(int status, unsigned long payload) {
     // Enqueue response to outbound queue
     udp_ctx->outbound_queue[udp_ctx->push_head++ & (OUTBOUND_Q_LEN - 1)] = payload;
 
-    // Notify the dispatcher
+    // Notify the dispatcher that we are free for one more item
     if (notify) {
-        unsigned long type = *rte_pktmbuf_mtod_offset(
-            static_cast<rte_mbuf *>((void*)payload), char *, NET_HDR_SIZE + sizeof(uint32_t)
-        );
-        unsigned long notif = (type << 60) ^ rdtscp(NULL);
-        if (unlikely(lrpc_ctx.push(notif, 0) == EAGAIN)) {
-            PSP_DEBUG("Worker " << worker_id << " could not signal work done to dpt");
+        unsigned long notif_sga = 0x0D15EA5E;
+        if (unlikely(lrpc_ctx.push(notif_sga, 0) == EAGAIN)) {
+            PSP_WARN("Worker " << worker_id << " could not signal work done to dpt");
         }
     }
     return 0;

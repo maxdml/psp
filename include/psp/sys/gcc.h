@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 #ifndef PSP_SYS_GCC_H_IS_INCLUDED
 #define PSP_SYS_GCC_H_IS_INCLUDED
 

@@ -14,7 +14,7 @@ int NetWorker::setup() {
 }
 
 // Just a filler
-int NetWorker::dequeue(unsigned long *payload) {
+int NetWorker::dequeue(unsigned long *payloa ) {
     return ENOTSUP;
 }
 
@@ -24,22 +24,26 @@ int NetWorker::process_request(unsigned long payload) {
 }
 
 int NetWorker::work(int status, unsigned long payload) {
-    // Dispatch enqueued requests
+    // Dispatcher enqueued requests
     if (dpt.dp != Dispatcher::dispatch_mode::DFCFS) {
         PSP_OK(dpt.dispatch());
     }
 
     // Check if we got packets from the network
     if (udp_ctx->recv_packets() != EAGAIN) {
-        uint64_t cur_tsc = rdtscp(NULL);
         //Process a batch of packets
         size_t batch_dequeued = 0;
         n_batchs_rcvd++;
         while (udp_ctx->pop_head > udp_ctx->pop_tail and batch_dequeued < MAX_RX_BURST) {
             unsigned long req = udp_ctx->inbound_queue[udp_ctx->pop_tail & (INBOUND_Q_LEN - 1)];
-            /*
             if (unlikely(is_echo)) {
                 //PSP_OK(udp_ctx->free_mbuf(&sga));
+                /*
+                uint32_t i;
+                for (i = 0; i < 1191; ++i) {
+                    asm volatile("nop");
+                }
+                */
                 if (unlikely(udp_ctx->push_head - udp_ctx->push_tail == OUTBOUND_Q_LEN)) {
                     PSP_WARN("Outbound UDP queue full. Freeing mbuf " << req);
                     PSP_OK(udp_ctx->free_mbuf(req));
@@ -48,25 +52,20 @@ int NetWorker::work(int status, unsigned long payload) {
                     udp_ctx->outbound_queue[udp_ctx->push_head++ & (OUTBOUND_Q_LEN - 1)] = req;
                 }
             } else {
-            */
-                int ret = dpt.enqueue(req, cur_tsc);
+                int ret = dpt.enqueue(req);
                 if (ret == EXFULL or ret == ENOENT) {
-                    // Free the request because we can't enqueue it
-                    PSP_OK(udp_ctx->free_mbuf(req));
-                    //break;
+                    break;
                 }
                 udp_ctx->pop_tail++;
-            //}
+            }
             batch_dequeued++;
         }
-        //PSP_DEBUG("Net worker dequeued " << batch_dequeued << " requests");
+        PSP_DEBUG("Net worker dequeued " << batch_dequeued << " requests");
         n_rcvd += batch_dequeued;
     }
-    /*
     if (unlikely(is_echo)) {
         PSP_OK(udp_ctx->send_packets());
     }
-    */
 
     return 0;
 }

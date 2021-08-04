@@ -52,13 +52,10 @@ enum class ReqType {
         return ReqType::STOCK_LEVEL;
     } else if (type == "OrderStatus") {
         return ReqType::ORDER_STATUS;
-    } else if (type == "SHORT") {
-        return ReqType::SHORT;
-    } else if (type == "LONG") {
-        return ReqType::LONG;
     }
     return ReqType::UNKNOWN;
 }
+
 
 // IX messages format
 struct IXMessage {
@@ -82,38 +79,25 @@ static inline int fast_atoi(const char * str, const char *end) {
 
 #define RQUEUE_LEN 4096
 #define MAX_WORKERS 32
-#define MAX_TYPES 8
-#define QOS_FACTOR 10
 struct RequestType {
     enum ReqType type;
-    uint64_t mean_ns = 0;
-    uint64_t deadline = 0;
-    double ratio = 0;
+    uint64_t mean_ns;
+    uint64_t deadline;
+    double ratio;
+    uint8_t free_peers[MAX_WORKERS];
     unsigned long rqueue[RQUEUE_LEN];
     unsigned int rqueue_tail;
     unsigned int rqueue_head;
-    uint64_t tsqueue[RQUEUE_LEN];
 
-    // Profiling variables
-    uint64_t windows_mean_ns = 0;
-    uint64_t windows_count = 0;
-    uint64_t delay = 0;
-
-    //DARC variables
-    uint32_t res_peers[MAX_WORKERS];
+    //Dyn resa variables
     uint32_t n_resas = 0;
-    uint64_t last_resa;
-    uint32_t stealable_peers[MAX_WORKERS];
-    uint32_t n_stealable = 0;
-    int type_group = -1;
-    uint64_t max_delay = 0;
-    double prev_demand = 0;
 
     RequestType() {};
 
     RequestType(enum ReqType type, uint64_t mean_ns, uint64_t deadline, double ratio) :
         type(type), mean_ns(mean_ns), deadline(deadline), ratio(ratio) {
             //There must be a way to 0-init an C array from initializer list
+            memset(free_peers, 0, MAX_WORKERS);
             memset(rqueue, 0, RQUEUE_LEN * sizeof(unsigned long));
             rqueue_tail = 0;
             rqueue_head = 0;
@@ -123,26 +107,9 @@ struct RequestType {
         return other.type == type;
     }
 
-    bool operator <(const RequestType &other) const {
-        /*
-        if (ratio == 0)
-            return false;
-        */
-        return mean_ns < other.mean_ns;
-    }
-
     bool operator !=(const RequestType &other) const {
         return other.type != type;
     }
-};
-
-struct TypeGroups {
-    RequestType *members[MAX_TYPES]; // By construction members are sorted by ascending service time
-    uint32_t n_members = 0;
-    uint32_t res_peers[MAX_WORKERS];
-    uint32_t n_resas = 0;
-    uint32_t stealable_peers[MAX_WORKERS];
-    uint32_t n_stealable = 0;
 };
 
 #endif // PSP_REQUEST_H

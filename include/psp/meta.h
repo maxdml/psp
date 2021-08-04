@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 #ifndef PSP_META_H_IS_INCLUDED
 #define PSP_META_H_IS_INCLUDED
 

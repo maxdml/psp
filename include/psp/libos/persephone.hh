@@ -24,7 +24,6 @@ const int TRACE = 0;
 const int APP_TRACE = 1;
 
 extern std::string log_dir;
-extern std::string label;
 #define MAX_LOG_FILENAME_LEN 128
 
 #define MAX_FILE_PATH_LEN 128
@@ -45,8 +44,7 @@ enum class WorkerType {
     DISPATCH,
     CLIENT,
     SILO,
-    MBK,
-    RDB
+    MBK
 };
 
 [[gnu::unused]] static const char *wt_str[] {
@@ -57,8 +55,7 @@ enum class WorkerType {
     "DISPATCH",
     "CLIENT",
     "SILO",
-    "MBK",
-    "ROCKSDB",
+    "MBK"
 };
 
 /************** Workers ************/
@@ -125,24 +122,19 @@ class Psp {
     /* dtor */
     public: ~Psp() {
         print_dpdk_device_stats(0); //XXX
-        if (net_mempool) {
-            rte_mempool_free(net_mempool);
-            net_mempool = nullptr;
-        }
     }
     private:
         template <typename A, typename B, typename C>
         int CreateWorker(int su_idx, B *dpt, C *netw, UdpContext *udp_ctx);
 
     /* Retrieve all workers of a given type */
-    public: uint32_t get_workers(enum WorkerType type, Worker **wrkrs) {
+    public: void get_workers(enum WorkerType type, Worker **wrkrs) {
         int j = 0;
         for (unsigned int i = 0; i < total_workers; ++i) {
             if (workers[i]->type == type) {
                 wrkrs[j++] = workers[i];
             }
         }
-        return j;
     }
 
     public: static void stop_all(int signo) {
@@ -161,7 +153,6 @@ class Psp {
 };
 
 /**************** Utilities ****************/
-//FIXME: those should be somewhere else
 static inline void pin_thread(pthread_t thread, u_int16_t cpu) {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);

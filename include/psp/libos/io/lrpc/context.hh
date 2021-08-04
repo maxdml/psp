@@ -34,6 +34,10 @@ class LrpcContext {
             } else {
                 break;
             }
+            if (egress[i].tbl) {
+                free(egress[i].tbl);
+                free(egress[i].recv_head_wb);
+            }
         }
     }
 };
