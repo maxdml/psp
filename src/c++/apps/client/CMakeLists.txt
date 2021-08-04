@@ -10,7 +10,3 @@ include_directories(${Boost_INCLUDE_DIR})
 add_executable(client ${CMAKE_CURRENT_SOURCE_DIR}/client.cc)
 target_link_libraries(client psp-libos)
 target_add_dpdk(client)
-
-add_executable(nc ${CMAKE_CURRENT_SOURCE_DIR}/nc.cc)
-target_link_libraries(nc psp-libos)
-target_add_dpdk(nc)
