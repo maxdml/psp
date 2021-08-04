@@ -17,7 +17,7 @@ set(CMAKE_CXX_FLAGS_RELEASE ${RELEASE_CFLAGS})
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(FAKE_WORK_DIR submodules/fake_work)
+set(FAKE_WORK_DIR ${CMAKE_SOURCE_DIR}/submodules/fake_work)
 add_library(fake-work SHARED IMPORTED GLOBAL)
 set_target_properties(fake-work PROPERTIES IMPORTED_LOCATION ${FAKE_WORK_DIR}/libfake.so)
 function(target_add_fake_work TARGET)
