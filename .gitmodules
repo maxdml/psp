@@ -11,4 +11,7 @@
 	url = https://github.com/facebook/rocksdb
 [submodule "submodules/Shremote"]
 	path = submodules/Shremote
-	url = https://github.com/isaac-ped/Shremote.git
+	url = https://github.com/isaac-ped/Shremote
+[submodule "submodules/fake_work"]
+	path = submodules/fake_work
+	url = https://github.com/maxdml/fake_work

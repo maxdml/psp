@@ -1,0 +1,25 @@
+# Usage of file inclusion
+
+# Importing a full section from another file
+hosts: !import includable.yml::hosts
+
+programs:
+
+    echo:
+        # Sub-sections can also be imported
+        start: !include includable.yml::echo::start
+        defaults:
+            to_echo: "Hello world!"
+
+    # Sections can be inherited, allowing for fields to be overridden or added
+    sleep: !inherit |
+        includable.yml::sleep
+        stop: pkill sleep
+
+commands:
+    - program: echo
+      begin: 0
+
+    - program: sleep
+      max_duration: 2
+      begin: 1

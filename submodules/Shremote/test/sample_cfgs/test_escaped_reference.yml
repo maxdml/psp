@@ -1,0 +1,13 @@
+referenceable: 'ref'
+escaped: '{{0.referenceable}}'
+
+commands:
+    - program:
+        start: echo "Hello world"
+        hosts:
+            addr: localhost
+      begin: 0
+      reference: "{0.referenceable}"
+      escaped: "{{0.referenceable}}"
+      dne: "{{0.DNE}}"
+      escaped_reference: "{0.escaped}"

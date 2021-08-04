@@ -1,0 +1,60 @@
+hosts:
+    local:
+        addr: local
+        # askpass is a special function which will prompt the user for a password
+        # at the start of the execution
+        sudo_password: $( askpass('local') )
+
+    multi_host:
+        # This is the only location in the config file where an evaluation may return a list
+        # It allows you to specify the the number of locations a host represents dynamically.
+        addr: $( [192.168.0.{i} for i in range(10)] )
+
+programs:
+
+    multiply:
+        # Evaluation can be used to do math
+        start: echo "{a} x {b} = $(a * b)"
+        host: local
+
+    replicate:
+        # Or simple string manipulation
+        # ( here: input='-.', num=5, will result in "'.-' * 5 = .-.-.-.-.- )
+        start: echo ' "{input}*{num}" = $( "{input}" * {num} ) '
+        host: local
+
+    grep:
+        # Or to deal with command line arguments more effectively
+        # Here, this passes the --context argument to grep if it is provided to shremote
+        start: grep $(passarg('context')) {filename}
+        host: local
+
+# It can be useful to put all timing information into a single map for reusability
+durations:
+    program_1: 10
+    program_2: 20
+    program_3: 30
+
+timing:
+    start_2: '{0.durations.program_1}'
+    start_3: $({0.timing.start_2} + {0.durations.program_2})
+
+
+commands:
+
+    - program: multiply
+      a: 4
+      b: 2
+      # This will only run if --do-multiply is provided to shremote
+      enabled: $(hasarg('do-multiply'))
+      start: 0
+
+    - program: replicate
+      # This will be .- if --input is not provided
+      input: $( getarg('input', '.-'))
+      num: 5
+      start: {0.timing.start_2}
+
+    - program: grep
+      filename: ~/.bashrc
+      start: {0.timing.start_3}

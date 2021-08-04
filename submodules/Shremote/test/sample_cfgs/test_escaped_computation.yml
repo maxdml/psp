@@ -1,0 +1,13 @@
+computed_string: $( 'x' * 42 )
+escaped_computation: $$( 'x' * 10 )
+reference_escape: '{0.escaped_computation}'
+
+commands:
+    - program:
+        start: echo "hello world"
+        hosts:
+            addr: localhost
+      begin: 0
+      computed: '{0.computed_string}'
+      escaped: '{0.escaped_computation}'
+      referenced: '{0.reference_escape}'

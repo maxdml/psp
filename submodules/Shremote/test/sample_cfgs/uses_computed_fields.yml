@@ -1,0 +1,45 @@
+files:
+    file_:
+        host: local
+        src: '{0.output_dir}/file.txt'
+        dst: '{host.log_dir}/file.txt'
+
+hosts:
+    local:
+        addr: 127.0.0.1
+
+programs:
+    uses_host_idx:
+        host: local
+        start: host_idx - echo {host_idx}
+    uses_host_subfield:
+        host: local
+        start: host.addr - echo {host.addr}
+    uses_user:
+        host: local
+        start: user - echo {0.user}
+    uses_label:
+        host: local
+        start: label - echo {0.label}
+    uses_cfg_dir:
+        host: local
+        start: cfg_dir - echo {0.cfg_dir}
+    uses_output_dir:
+        host: local
+        start: output_dir - echo {0.output_dir}
+
+commands:
+    - program: uses_host_idx
+      begin: 0
+    - program: uses_host_subfield
+      begin: 0
+    - program: uses_output_dir
+      begin: 0
+    - program: uses_user
+      begin: 0
+    - program: uses_label
+      begin: 0
+    - program: uses_cfg_dir
+      begin: 0
+
+

@@ -1,0 +1,44 @@
+hosts:
+  localhost:
+    addr: localhost
+
+programs:
+    echo:
+        start: echo {to_echo}
+        hosts: localhost
+
+    sleep:
+        start: sleep {duration}
+        stop: kill {pid}
+        hosts: localhost
+
+commands:
+
+    # Starts immediately. Ends after the "sleep" command finishes at t=3s
+    - program: sleep
+      name: long_sleep
+      begin: 0
+      duration: 100
+      stop_after: sleep
+
+    - program: sleep
+      duration: 3
+      begin: 1
+
+    # Starts after the "sleep" command finishes
+    - program: echo
+      to_echo: "Sleep Ended (~4 seconds)"
+      start_after: sleep
+
+    # Triggered by the stop of the "long_sleep" command
+    # Sleep requested for 100 seconds. max_duration should ensure it ends earlier
+    - program: sleep
+      name: sleep-2
+      duration: 100
+      max_duration: 3
+      start_after: long_sleep
+
+    # Triggered by the end of sleep-2 (should be at ~7 seconds)
+    - program: echo
+      to_echo: "Sleep 2 ended (~7 seconds)"
+      start_after: sleep-2

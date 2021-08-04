@@ -1,0 +1,92 @@
+# Usage of computed fields (those provided by shremote)
+
+####
+# Added fields at the base level are:
+# * user
+# * label
+# * output_dir (differs from log_dir in that the label is automatically appended to the path)
+# * cfg_dir (directory in which this file is located
+# * args
+####
+
+####
+# By default, {0.log_dir} is set to ~/shremote_logs
+####
+
+####
+# Hosts provide the computed field {host.output_dir},
+# which is the directory where output is placed on that specific  host
+####
+hosts:
+    a:
+        addr: a.edu
+        # log_dir defaults set to {0.log_dir} (which defaults to ~/shremote_logs)
+    b:
+        addr: b.edu
+        # Username of the currently-executing user is substituted for {0.user}
+        log_dir: /tmp/{0.user}/shremote_logs
+
+files:
+    # copy a local config file into the output directory on the remote host
+    cfg_file:
+        src: './local_config.cfg'
+        # The below expands to:
+        #  on node a: ~/shremote_logs/remote_config.cfg
+        #  on node b: /tmp/<username>/shremote_logs/remote_config.cfg
+        dst: '{host.output_dir}/remote_config.cfg'
+        hosts: [a, b]
+
+    # Run pre-processing on an input file and copy it to the remote host
+    # (see init_cmds for pre-processing command)
+    preproc:
+        # "template" is not used by shremote directly, and instead is used by an init_cmd
+        # {0.cfg_dir} expands to the directory in which this config file is stored
+        # (so that shremote can be executed from any directory)
+        template: '{0.cfg_dir}/input_template.input'
+        # {0.output_dir} expands to the local machine's output directory
+        # (this way a copy of the file will be stored with the program's output)
+        src: '{0.output_dir}/formatted.input'
+        dst: '{host.output_dir}/formatted.input'
+        host: a
+
+init_cmds:
+    # Generates the pre-processed input file
+    - cmd: python {0.cfg_dir}/pre_formatter.py {0.files.preproc.template} > {0.files.preproc.src}
+
+programs:
+    echo:
+        start: >-
+            echo "Sleeping for {seconds} seconds on host {host.addr}" &&
+            sleep {seconds}
+
+    # A use-case in which multiple servers are started,
+    # and logs should be differentiated by the server index
+    start_servers:
+        # {log_dir} is replaced by this specific program's log directory
+        # (in this case, ~/shremote_logs/<label>/server_logs/)
+        start: /usr/bin/start_myserver -l {log_dir}/server_{host_idx}.log
+        # {pid} is replaced by the current command's process id
+        stop: kill {pid}
+        log:
+            dir: server_logs
+            out: server_{host_idx}.out
+            err: server_{host_idx}.err
+
+
+commands:
+
+    # Echos: "Sleeping for <...> seconds on host a.edu"
+    # where <...> is replaced by the argument passed to shremote
+    # i.e. ./shremote.py examples/computed_fields.yml my_label -- --duration=42
+    #  will cause it to sleep for 42 seconds
+    - program: echo
+      host: a
+      seconds: {0.args.duration}
+      begin: 0
+
+    # On host a, logs to server_0.out/server_0.err
+    # On host b, logs to server_1.out/server_1.err
+    - program: start_servers
+      host: [a. b]
+      begin: 0
+      max_duration: 10

@@ -1,0 +1,19 @@
+# Usage of default program argument
+
+programs:
+    echo:
+        start: echo {to_echo}
+        hosts:
+            addr: localhost
+        defaults:
+            to_echo: "Hello world!"
+
+commands:
+    # This program will echo the default to_echo string, "Hello world!"
+    - program: echo
+      begin: 0
+
+    # This program overrides the value of to_echo and will instead echo 'Goodbye world'
+    - program: echo
+      to_echo: "Goodbye world"
+      begin: 5

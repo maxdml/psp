@@ -1,0 +1,36 @@
+foo: bar
+
+foo_map:
+    bar_entry:
+        qux: baz
+
+hosts:
+    local:
+        addr: localhost
+        location: My House
+
+programs:
+    echo:
+        # The command must provide a definition of `to_echo`
+        start: echo {to_echo}
+        host: local
+
+commands:
+    - program: echo
+      # Top-level fields are referred to with {0.<field>}
+      to_echo: '{0.foo}'
+      begin: 0
+
+    - programs: echo
+      # You can also descend into fields
+      to_echo: '{0.foo_map.bar_entry.qux}'
+
+    - programs: echo
+      # Certain fields, such as the active host, are added to
+      # the format arguments automatically
+      to_echo: 'Hello from {host.location}'
+
+    - programs: echo
+      # Doubling the braces will eliminate the reference, and reduce them to a single brace
+      # e.g. this will become the exact string '{this ain't no reference!}'
+      to_echo: "{{this ain't no reference!}}"

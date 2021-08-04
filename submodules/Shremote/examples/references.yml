@@ -1,0 +1,40 @@
+hosts:
+    a:
+        addr: a.edu
+        ssh:
+            user: my_username_on_a
+    b:
+        addr: b.edu
+
+programs:
+    echo:
+        # Hosts can be specified by referring to a host label
+        host: a
+        start: echo '{to_echo}'
+
+    cat:
+        # A list of host labels...
+        host: [a, b]
+        start: cat '{filename}'
+
+    sleep:
+        # Or by specifying the host in-line
+        host:
+            addr: c.edu
+            ssh:
+                user: my_username_on_c
+        start: sleep {duration}
+
+
+commands:
+
+    # Similarly, commands may refer to program by name
+    - program: cat
+      filename: 'my_file'
+      begin: 0
+
+    # Or by defining them inline
+    - program:
+        start: 'ls ~'
+      host: b
+      begin: 5

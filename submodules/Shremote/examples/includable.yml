@@ -1,0 +1,15 @@
+# This file is not a full config file, but is meant to be included in other files
+
+hosts:
+    local:
+        addr: localhost
+
+
+echo:
+    start: echo {to_echo}
+
+sleep:
+    start: sleep {duration}
+    defaults:
+        duration: 100
+
