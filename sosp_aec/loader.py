@@ -833,7 +833,7 @@ def plot_p99s(distros, app="REST", value='p99', use_ylim=True, close_all=True, n
 #             import pdb; pdb.set_trace()
             d = df[df.policy == pol].sort_values(by=['load'])
             if d.empty or typed_d.empty:
-                print(f"{pol} empty")
+                #print(f"{pol} empty")
                 continue
 
 #             print(f'using {m[pol]}')
