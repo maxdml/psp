@@ -189,43 +189,43 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 printf("p99: %f\n", durations[990]);
                 printf("p99.9: %f\n", durations[999]);
                 */
-                /*
-                // 6.4 eval
-                dpt.first_resa_done = true;
-                uint32_t n_resas = config["n_resas"].as<uint32_t>();
+                // Support manual DARC tuning for 2 types of requests
+                if (config["n_resas"].IsDefined()) {
+                    dpt.dp = Dispatcher::dispatch_mode::DARC;
+                    dpt.first_resa_done = true;
+                    uint32_t n_resas = config["n_resas"].as<uint32_t>();
 
-                // Useful to manually set reservations for microbenchmark
-                RequestType &shorts = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::SHORT)]];
-                shorts.type_group = 0;
-                RequestType &longs = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::LONG)]];
-                longs.type_group = 1;
+                    RequestType *shorts = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::SHORT)]];
+                    shorts->type_group = 0;
+                    RequestType *longs = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::LONG)]];
+                    longs->type_group = 1;
 
-                // Assign cores to groups (short can steal from all)
-                PSP_DEBUG("Shorts reservation: " << 0 << " to " << n_resas);
-                for (unsigned int i = 0; i < n_resas; ++i) {
-                    dpt.groups[0].res_peers[i] = i;
-                }
-                dpt.groups[0].n_resas = n_resas;
-                PSP_DEBUG("Shorts can steal: " << n_resas << " to " << cpus.size()-1);
-                dpt.groups[0].n_stealable = 0;
-                for (unsigned int i = n_resas; i < cpus.size(); ++i) {
-                    dpt.groups[0].stealable_peers[dpt.groups[0].n_stealable++] = i;
-                }
+                    PSP_INFO("Manually tuning DARC with " << n_resas << " cores for short requests")
+                    PSP_INFO("Shorts reservation: " << 0 << " to " << n_resas);
+                    for (unsigned int i = 0; i < n_resas; ++i) {
+                        dpt.groups[0].res_peers[i] = i;
+                    }
+                    dpt.groups[0].n_resas = n_resas;
+                    PSP_INFO("Shorts can steal: " << n_resas << " to " << cpus.size()-2);
+                    dpt.groups[0].n_stealable = 0;
+                    for (unsigned int i = n_resas; i < cpus.size(); ++i) {
+                        dpt.groups[0].stealable_peers[dpt.groups[0].n_stealable++] = i;
+                    }
 
-                PSP_DEBUG("Longs reservation: " << n_resas << " to " << cpus.size()-1);
-                dpt.groups[1].n_resas = 0;
-                for (unsigned int i = n_resas; i < cpus.size(); ++i) {
-                    dpt.groups[1].res_peers[dpt.groups[1].n_resas++] = i;
-                }
-                dpt.groups[1].n_stealable = 0;
+                    PSP_INFO("Longs reservation: " << n_resas << " to " << cpus.size()-2);
+                    dpt.groups[1].n_resas = 0;
+                    for (unsigned int i = n_resas; i < cpus.size(); ++i) {
+                        dpt.groups[1].res_peers[dpt.groups[1].n_resas++] = i;
+                    }
+                    dpt.groups[1].n_stealable = 0;
 
-                for (unsigned int i = 0; i < dpt.groups[0].n_resas; ++i) {
-                    PSP_DEBUG("Worker " << dpt.groups[0].res_peers[i] << " reserved to shorts");
+                    for (unsigned int i = 0; i < dpt.groups[0].n_resas; ++i) {
+                        PSP_INFO("Worker " << dpt.groups[0].res_peers[i] << " reserved to shorts");
+                    }
+                    for (unsigned int i = 0; i < dpt.groups[1].n_resas; ++i) {
+                        PSP_INFO("Worker " << dpt.groups[1].res_peers[i] << " reserved to longs");
+                    }
                 }
-                for (unsigned int i = 0; i < dpt.groups[1].n_resas; ++i) {
-                    PSP_DEBUG("Worker " << dpt.groups[1].res_peers[i] << " reserved to longs");
-                }
-                */
             }
         } else {
             if (dpt.dp != Dispatcher::dispatch_mode::CFCFS or dpt.dp != Dispatcher::dispatch_mode::DFCFS) {
