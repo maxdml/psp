@@ -138,8 +138,11 @@ I. Setup
 
 II. Experiments
 
+- find a way to call base_start when switching systems
+- Call out which figure is long to plot and why
+
 3) Figure 4
-- Check it actually works with the flow control :/
+- Figure 4: update CFCFS line
 
 4) Figure 5
 - Shinjuku build and run needs path to config file in shremote config programs.yml
@@ -163,3 +166,4 @@ ENHANCEMENTS
      * select the right kernel when rebooting (insn do 1 time pick?)
      * export AE_DIR at startup
      * base_start and stuff when rebooting
+- Figure 4: add a circle at the point (instead of the current line)

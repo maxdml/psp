@@ -16,7 +16,18 @@ import yaml
 
 cache = {}
 
-exp_base_folder = './experiments/'
+exp_base_folder = '/psp/experiments/'
+
+distros = {
+    'Figure3': 'DISP2',
+    'Figure4_a': 'DISP2',
+    'Figure4_b': 'SBIM2',
+    'Figure5_a': 'DISP2',
+    'Figure5_b': 'SBIM2',
+    'Figure6': 'TPCC',
+    'Figure7': 'ROCKSDB'
+    #TODO Figure8 ?
+}
 
 workloads = {
     'BIM1': {
@@ -484,7 +495,7 @@ def prepare_pctl_data(rtypes, exps=[], exp_file=None, app="REST", dt='client-end
         pol = policies[exp.split('_')[0]]
         load = float(exp.split('_')[1])
         workload = exp.split('_')[2].split('.')[0]
-        n_resa = int(exp.split('_')[-1].split('.')[0]) - 1
+        n_resa = int(exp.split('_')[-1].split('.')[0])
         run_number = int(exp.split('.')[2])
 
         rate_df = rates_df[exp]
@@ -779,7 +790,7 @@ def plot_setups_traces(exps, data_types=[], show_ts=False, pctl=1, reset_figure=
             axs[0][0].legend()
 
 alph = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
-def plot_p99s(distros, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, add_shen=False, **kwargs):
+def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, add_shen=False, **kwargs):
     if close_all:
         plt.close('all')
     colors = list(mcolors.TABLEAU_COLORS.keys())[:len(policies)]
@@ -802,14 +813,15 @@ def plot_p99s(distros, app="REST", value='p99', use_ylim=True, close_all=True, n
         sy=False
         left = 0 # FIXME: input smallest offered load
 
-    nrows = len(distros)
+    nrows = len(exp_files)
     if ncols == -1:
         ncols = len(req_types) + 1
 
     fig, axes = plt.subplots(nrows, ncols, squeeze=False, sharey=False, sharex=False, figsize=(15,3))
     row_labels = []
-    for row, dist in enumerate(distros):
-        psp_df_all, psp_df_typed = prepare_pctl_data(req_types, exp_file=dist, **kwargs)
+    for row, exp_file in enumerate(exp_files):
+        dist = distros[exp_file]
+        psp_df_all, psp_df_typed = prepare_pctl_data(req_types, exp_file=exp_file, **kwargs)
         if add_shen:
             shen_df_all, shen_df_typed = parse_shenango_data('/home/maxdml/experiments/shenango.3', dist)
             if not shen_df_all.empty:
@@ -940,7 +952,7 @@ def plot_p99s(distros, app="REST", value='p99', use_ylim=True, close_all=True, n
 #     plt.subplots_adjust(left=0.05, bottom=None, right=0.95, top=None, wspace=0.3, hspace=0)
     plt.subplots_adjust(left=None, bottom=None, right=None, top=.8, wspace=None, hspace=None)
 #     fig.set_canvas(plt.gcf().canvas)
-    plt.savefig(f'/psp/experiments/{distros[0]}.pdf', format='pdf')
+    plt.savefig(f'/psp/experiments/{exp_files[0]}.pdf', format='pdf')
 #     gs1 = gridspec.GridSpec(23, 8)
 #     gs1.update(wspace=0.025, hspace=0.05) # set the spacing between axes.
 #     set_size(20,5)
@@ -958,9 +970,9 @@ def set_size(w,h, ax=None):
     ax.figure.set_size_inches(figw, figh)
 
 
-def plot_wcc(distro, value='p99', **kwargs):
+def plot_wcc(exp_file, value='p99', darc_cores=2, **kwargs):
     req_types = apps['MB']
-    df, typed_df = prepare_pctl_data(req_types, exp_file=distro, **kwargs)
+    df, typed_df = prepare_pctl_data(req_types, exp_file=exp_file, **kwargs)
 #     print(data)
 
     # 1 subplot
@@ -973,23 +985,26 @@ def plot_wcc(distro, value='p99', **kwargs):
         typed_d = typed_d[typed_d.type == 'SHORT']
         d = df[df.policy == pol].sort_values(by=['load'])
         if d.empty or typed_d.empty:
-            print(f"{pol} empty")
+            #print(f"{pol} empty")
             continue
 #         print(typed_d)
 
         # Plot DARC with varying reserved cores
+        # FIXME: Y is not correct
         line, = ax.plot(d.reserved, d[value+'_slowdown'], marker='^', linestyle='solid', color='green', label='DARC-static')
+        y = df[(df.policy == 'DARC') & (df.type == 'UNKNOWN') & (df.reserved == darc_cores)]['p99.9_slowdown']
+        ax.add_patch(plt.Circle((darc_cores, 1.5), 0.15, color='green', fill=False))
 
         # Plot DARC algorithm selection
-        ax.axvline(x=2, color='green', linestyle='dashed', label='DARC')
+        ax.axvline(x=darc_cores, color='green', linestyle='dashed', label='DARC')
 
     # Plot straight lines for cFCFS and FP
     # SBIM2: 3542 in shenango, 3174 in psp
     # DISP2: 110
-    ax.plot(np.arange(0,14), [3542]*14, linestyle='dashed', color='black', label='c-FCFS')
-#     ax.legend(loc="upper right", ncol=3,  bbox_to_anchor=(-.1, 1.375, 1, 0))
+    #ax.plot(np.arange(0,14), [3542]*14, linestyle='dashed', color='black', label='c-FCFS')
+    ax.legend(loc="upper right", ncol=3,  bbox_to_anchor=(-.1, 1.375, 1, 0))
     ax.set_yscale('log')
-    ax.set_ylim(top=1e4)
+    #ax.set_ylim(top=1e4)
 #     plt.title('(a)', fd)
     fig.tight_layout()
 

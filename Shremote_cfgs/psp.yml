@@ -16,6 +16,7 @@ params:
     clt_threads: $(getarg('clt-threads', '2'))$
     schedule: $(getarg('schedule'))$
     load: $(getarg('load', 1.0))$
+    n_resas: $(getarg('n-resas', 0))$
 
 programs: !include "config/programs.yml"
 
@@ -55,6 +56,7 @@ init_cmds:
         --dpdk-dev-num {0.hosts.client0.dev_num} --dpdk-prefix {0.user}
         --cpus {0.params.clt_cpus}
         --schedule {0.params.schedule} --load {0.params.load}
+        --n-resas {0.params.n_resas}
 
 client_params: &clt_params
       duration: $( {0.params.duration} )$

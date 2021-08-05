@@ -17,7 +17,7 @@ parser.add_argument('--cpus', type=str, nargs='+', default='1')
 parser.add_argument('--dp-pol', type=str, default='DFCFS')
 parser.add_argument('--app-type', type=str, default='MB')
 parser.add_argument('--req-type', nargs=4, action='append')
-parser.add_argument('--n-resas', type=int, default=0)
+parser.add_argument('--n-resas', type=int, default=-1)
 parser.add_argument('--schedule', type=str)
 
 args = parser.parse_args()
@@ -41,12 +41,13 @@ config = {
         'is_echo': 0
     }],
     'cpus': [int(cpu) for cpu in args.cpus],
-    'n_resas': args.n_resas,
     'workers': {
         'number': len(args.cpus) - 1, #Assuming split_dpt = 0
         'type': args.app_type,
     }
 }
+if args.n_resas > -1:
+    config['n_resas'] = args.n_resas
 
 if args.schedule:
     types = []

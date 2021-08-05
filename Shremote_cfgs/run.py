@@ -45,6 +45,8 @@ parser.add_argument('-T', '--parse-test', dest='parse_test', action='store_true'
 parser.add_argument('-a', '--app-type', type=str, default='MB')
 parser.add_argument('-d', '--downsample', type=int, default=-1)
 parser.add_argument('-b', '--base-output', type=str, default='/psp/experiments')
+parser.add_argument('-m', '--darc-manual', type=int, default=-1)
+parser.add_argument('-L', '--load-range', nargs=2, type=float, default=[.05, 1.06])
 # env
 args = parser.parse_args()
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,10 +65,13 @@ elif args.system == 'caladan':
 else:
     CFG = os.path.join(DIR, "psp.yml")
 output_paths = []
-for LOAD in np.arange(.05, 1.06, .05):
-#for LOAD in [0.80]:
+for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
+    TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
+    if args.darc_manual:
+        TITLE += f'_{args.darc_manual}'
+    TITLE += f'.{args.run_number}'
     for DP in args.policies:
-        TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}.{args.run_number}'
+        TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
         shremote_args = [
             'python3', '-u',
             SHREMOTE, CFG, TITLE, '--out', BASE_OUTPUT, '--delete', '--',
@@ -91,6 +96,8 @@ for LOAD in np.arange(.05, 1.06, .05):
                     shremote_args.extend(['--n-ports', '1', '--preemption-tick', '15000'])
         if args.parse_test:
             shremote_args.append('--parse-test')
+        if args.darc_manual > -1:
+            shremote_args.extend(['--n-resas', str(args.darc_manual]))
         log_info(shremote_args)
         p = subprocess.Popen(shremote_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         while(1):
