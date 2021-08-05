@@ -203,7 +203,6 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     longs->type_group = 1;
 
                     PSP_INFO("Manually tuning DARC with " << n_resas << " cores for short requests")
-                    PSP_INFO("Shorts reservation: " << 0 << " to " << n_resas - 1);
                     for (unsigned int i = 0; i < n_resas; ++i) {
                         dpt.groups[0].res_peers[i] = i;
                     }
