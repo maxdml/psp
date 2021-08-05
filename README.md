@@ -123,45 +123,8 @@ NODES=('236' '237' '229' '223' '240' '227' '244')
 for node in ${NODES[@]}; do ssh -i ~/path/to/your/private/key user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
 
-Then go to localhost:8888 on your browser. Open the notebook "aec.ipynb"
-
-Figure 3
---------
-This command will run three experiments, one per scheduling policy.
-
-Then, run cell #x in the notebook.
-
-Figure 4
---------
-
-**TODO**
-- This requires manual configuration of the cores given to DARC
-- Make it configurable in the server: e.g. "manual" flag with number of cores for the short requests
-
-Figure 5-a
---------
-```bash
-./run.py 0 psp DISP2
-./run.py 0 shinjuku DISP2
-./run.py 0 shenango DISP2
-```
-
-Figure 5-b
---------
-```bash
-./run.py 0 psp SBIM2
-./run.py 0 shinjuku SBIM2
-./run.py 0 shenango SBIM2
-```
-
-Figure 6
---------
-
-Figure 7
---------
-
-Figure 8
---------
+Then go to localhost:8888 on your browser. Open the notebook "aec.ipynb".
+The notebook has one cell per figure in the paper. You can gather data from the notebook or the terminal. Each cell has a commented command to run a script. However, this is a somewhat lengthy process and you might want to run them in a terminal. To do so, execute `sudo docker exec -it IMAGE_ID /bin/bash`, then run the command provided in the notebook.
 
 
 TODOS
@@ -171,16 +134,13 @@ I. Setup
 
 II. Experiments
 
-2) figure 3
-- hide all the plotting code in a module
-- find a way to automate the generation of the file listing all load points.
-
 3) Figure 4
-- Update psp to receive configuration for figure 4
+- Check it actually works with the flow control :/
 
 4) Figure 5
 - Shinjuku build and run needs path to config file in shremote config programs.yml
 - Preemption tick for shinjuku
+- Figure out the drops & stuff for shinjuku
 
 5) Figure 6
 6) Figure 7
@@ -188,14 +148,12 @@ II. Experiments
 
 III. Public repo
 - Cleanup all unneeded files
-- Double check leak of personal info (e.g. ssh_config.yml)
+- Go over each file. Check leak of personal info (e.g. ssh_config.yml)
 
 ENHANCEMENTS
 --------------
-- sed /etc/default/grub rather than manual update
-- Generate all yml file for remote_mac (sjk client), etc
+- Generate base shinjuku config remote_mac
 - Automate choice of "default" for apt update (curse UI still shows)
-- Change schedule names to match figure numbers?
 - Note some "good" cloudlab nodes (and maybe bad ones too)
 - Make sure we remind ppl to
      * select the right kernel when rebooting (insn do 1 time pick?)
