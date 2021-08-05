@@ -201,20 +201,20 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     longs->type_group = 1;
 
                     PSP_INFO("Manually tuning DARC with " << n_resas << " cores for short requests")
-                    PSP_INFO("Shorts reservation: " << 0 << " to " << n_resas);
+                    PSP_INFO("Shorts reservation: " << 0 << " to " << n_resas - 1);
                     for (unsigned int i = 0; i < n_resas; ++i) {
                         dpt.groups[0].res_peers[i] = i;
                     }
                     dpt.groups[0].n_resas = n_resas;
-                    PSP_INFO("Shorts can steal: " << n_resas << " to " << cpus.size()-2);
+                    PSP_INFO("Shorts can steal: " << n_resas << " to " << dpt.n_workers-1);
                     dpt.groups[0].n_stealable = 0;
-                    for (unsigned int i = n_resas; i < cpus.size(); ++i) {
+                    for (unsigned int i = n_resas; i < dpt.n_workers; ++i) {
                         dpt.groups[0].stealable_peers[dpt.groups[0].n_stealable++] = i;
                     }
 
                     PSP_INFO("Longs reservation: " << n_resas << " to " << cpus.size()-2);
                     dpt.groups[1].n_resas = 0;
-                    for (unsigned int i = n_resas; i < cpus.size(); ++i) {
+                    for (unsigned int i = n_resas; i < dpt.n_workers; ++i) {
                         dpt.groups[1].res_peers[dpt.groups[1].n_resas++] = i;
                     }
                     dpt.groups[1].n_stealable = 0;
