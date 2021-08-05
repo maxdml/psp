@@ -1,6 +1,15 @@
+import seaborn as sns
+import matplotlib
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from matplotlib.ticker import ScalarFormatter
+from matplotlib import lines
 import pandas as pd
-import os
+import numpy as np
 from pathlib import Path
+import os
+import sys
 import csv
 import time
 import yaml
@@ -107,12 +116,12 @@ policies = {
 #     'EDFNP': 'ARS-EDF',
      'c-PRE-SQ': 'c-PRE-SQ',
     'c-PRE-MQ': 'c-PRE-MQ',
-    'DYN-RESA': 'DYN-RESA'
+    'DARC': 'DARC'
 }
 
 # For final print
 pol_names = {
-    'DYN-RESA': 'DARC',
+    'DARC': 'DARC',
     'c-FCFS': 'c-FCFS',
     'd-FCFS': 'd-FCFS',
     'c-PRE-MQ': 'c-PRE',
@@ -134,7 +143,7 @@ system_pol = {
     'EDF': 'Perséphone',
     'c-PRE-SQ': 'Shinjuku',
     'c-PRE-MQ': 'Shinjuku',
-    'DYN-RESA': 'Perséphone'
+    'DARC': 'Perséphone'
 }
 
 trace_label_to_dtype = {
@@ -686,3 +695,474 @@ def gen_wl_dsc(workload, req_names=None):
         if i < len(workload['rtype']):
             wl += '\n'
     return wl
+
+
+fd = {'family': 'normal', 'weight': 'bold', 'size': 9}
+matplotlib.rc('font', **fd)
+matplotlib.rcParams['lines.markersize'] = 3
+pd.set_option('display.max_rows', 500)
+pd.options.display.float_format = '{:.9f}'.format
+
+linestyles= [
+    ('dotted',                (0, (1, 1))),
+    ('dashed',                (0, (5, 5))),
+    ('dashdotted',            (0, (3, 5, 1, 5))),
+    ('dashdotdotted',         (0, (3, 5, 1, 5, 1, 5))),
+
+    ('loosely dotted',        (0, (1, 10))),
+    ('loosely dashed',        (0, (5, 10))),
+    ('loosely dashdotted',    (0, (3, 10, 1, 10))),
+    ('loosely dashdotdotted', (0, (3, 10, 1, 10, 1, 10))),
+
+    ('densely dotted',        (0, (1, 1))),
+    ('densely dashed',        (0, (5, 1))),
+    ('densely dashdotted',    (0, (3, 1, 1, 1))),
+    ('densely dashdotdotted', (0, (3, 1, 1, 1, 1, 1)))
+]
+
+ts_pal = {"SHORT": "C0", "LONG": "C1", "PAGE":"C0","REGEX":"C1", 'NewOrder': 'C0', 'Payment': 'C1', 'Delivery': 'C2', 'StockLevel': 'C3', 'OrderStatus': 'C4', 'UNKNOWN': 'C1'}
+np.set_printoptions(precision=3)
+
+def plot_setups_traces(exps, data_types=[], show_ts=False, pctl=1, reset_figure=True, app='REST', **kwargs):
+    req_types = apps[app]
+
+    if reset_figure:
+        plt.close('all')
+    if (len(data_types) == 0):
+        data_types = ['client-end-to-end']
+
+    setups = prepare_traces(exps, data_types, pctl=pctl, **kwargs)
+
+    if show_ts:
+        ncols = len(setups)
+    else:
+        ncols = len(req_types)
+
+    for i, t in enumerate(data_types):
+        # Instantiate the figure
+        plt.figure(i+1, figsize=(10, 10))
+        if show_ts:
+            sy=True
+        else:
+            sy=False
+        fig, axs = plt.subplots(1, ncols, squeeze=False, sharey=sy, sharex=False, num=i+1)
+        for j, setup in enumerate(setups.keys()):
+            setups[setup][t].VALUE /= 1000
+            if show_ts:
+                c_index = j % ncols
+                sns.scatterplot(x=setups[setup][t].TIME, y='VALUE', data=setups[setup][t], hue="REQ_TYPE", ax=axs[0][c_index], label=setup, palette=ts_pal)#, style="REQ_TYPE")
+                axs[0][c_index].set(xlabel='Time', ylabel='latency (us)')
+            else:
+                if pctl != 1:
+                    base = pctl
+                else:
+                    base = 0
+                setups[setup][t].sort_values(by=['VALUE'], inplace=True)
+
+                for col, rtype in enumerate(req_types):
+                    type_df = setups[setup][t][setups[setup][t].REQ_TYPE == rtype]
+                    y = np.linspace(base, 1, len(type_df.VALUE))
+                    x = np.sort(type_df.VALUE)
+                    print('[{}: {}] mean: {}, median: {}, p99: {}'.format(
+                        setup, rtype,
+                        int(type_df.VALUE.mean()),
+                        int(type_df.VALUE.median()),
+                        int(type_df.VALUE.quantile(.99))
+                    ))
+                    axs[0][col].axhline(.99, color='grey', linestyle='dotted')
+                    axs[0][col].xaxis.set_major_formatter(ScalarFormatter())
+                    axs[0][col].plot(x, y, label=setup)
+                    axs[0][col].set(xlabel='latency (us)', ylabel='% requests')
+                    axs[0][col].set_title(rtype)
+
+            fig.suptitle('{}'.format(t))
+            axs[0][0].legend()
+
+alph = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
+def plot_p99s(distros, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, add_shen=False, **kwargs):
+    if close_all:
+        plt.close('all')
+    colors = list(mcolors.TABLEAU_COLORS.keys())[:len(policies)]
+    colors[6] = 'tab:gray'
+    markers = ['D', '^', 'o', 'v', '<', '>', 'p', 'h', 'X', '+'][:len(policies)]
+    c = {pol: color for pol, color in zip(policies.values(), colors)}
+#     l = {pol: lstyle for pol, (_, lstyle) in zip(policies.values(), linestyles)}
+    l = {pol: 'solid' for pol in policies.values()}
+    m = {pol: marker for pol, marker in zip(policies.values(), markers)}
+
+    req_types = apps[app]
+    if app == 'SILO' or app == 'TPCC' or app == 'ROCKSDB':
+        top = 250
+        sy=True
+        left = 0
+    elif app == 'REST':
+        sy = False
+        left = 25
+    elif app == 'MB':
+        sy=False
+        left = 0 # FIXME: input smallest offered load
+
+    nrows = len(distros)
+    if ncols == -1:
+        ncols = len(req_types) + 1
+
+    fig, axes = plt.subplots(nrows, ncols, squeeze=False, sharey=False, sharex=False, figsize=(15,3))
+    row_labels = []
+    for row, dist in enumerate(distros):
+        psp_df_all, psp_df_typed = prepare_pctl_data(req_types, exp_file=dist, **kwargs)
+        if add_shen:
+            shen_df_all, shen_df_typed = parse_shenango_data('/home/maxdml/experiments/shenango.3', dist)
+            if not shen_df_all.empty:
+                shen_df_all.achieved /=1000
+                shen_df_all.offered /= 1000
+                shen_df_typed.achieved /=1000
+                shen_df_typed.offered /= 1000
+                # Make shenango's experiments with drops infinite latency #FIXME: not really fair because we don't tolerate anything like we do with psp
+                shen_df_typed[value] = shen_df_typed.apply(lambda x: sys.maxsize if x.achieved < x.offered else x[value], axis=1)
+                shen_df_all[value] = shen_df_all.apply(lambda x: sys.maxsize if x.achieved < x.offered else x[value], axis=1)
+
+            df = pd.concat([psp_df_all, shen_df_all]).groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+            typed_df = pd.concat([psp_df_typed, shen_df_typed]).groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+        else:
+            df = psp_df_all.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+            typed_df = psp_df_typed.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+
+#         print(df[df.achieved  < df.offered][['offered', 'achieved', 'policy']])
+        for pol_inter, pol in policies.items():
+            typed_d = typed_df[typed_df.policy == pol].sort_values(by=['load'])
+#             import pdb; pdb.set_trace()
+            d = df[df.policy == pol].sort_values(by=['load'])
+            if d.empty or typed_d.empty:
+                print(f"{pol} empty")
+                continue
+
+#             print(f'using {m[pol]}')
+            runs = typed_d.run_number.unique()
+            if len(runs) > 1:
+                for run in runs:
+                    dd = d[d.run_number == run]
+                    line, = axes[row][0].plot(dd.offered, dd[value+'_slowdown'], marker=m[pol], linestyle=l[pol])#, color=c[pol])
+                    line.set_label(f'{pol_names[pol]}-{run}')
+                if use_ylim:
+                    axes[row][0].set_ylim(bottom=-5, top=workloads[dist]['UNKNOWN']['YLIM'])
+                axes[row][0].set_xlim(left=left, right=workloads[dist]['max_load']/1000)
+                axes[row][0].grid(b=True, axis='y', linestyle='-', linewidth=1)
+                axes[row][0].set_title('Overall', fd)
+                axes[row][0].set_ylabel(f'p99.9 slowdown', fd)
+
+                for run in runs:
+                    for i, rtype in enumerate(req_types):
+#                         if rtype == 'LONG':
+#                             value = 'p99'
+                        col = i + 1
+                        type_df = typed_d[(typed_d.type == rtype) & (typed_d.run_number == run)]
+                        line, = axes[row][col].plot(type_df.offered, type_df[value], marker=m[pol], linestyle=l[pol])#, color=c[pol])
+                        if use_ylim:
+                            axes[row][col].set_ylim(bottom=-5, top=workloads[dist][rtype]['YLIM'])
+                        axes[row][col].set_xlim(left=left, right=workloads[dist]['max_load']/1000)
+                        axes[row][col].grid(b=True, axis='y', linestyle='-', linewidth=1)
+                        if col == 1:
+                             axes[row][col].set_ylabel(f'p99.9 latency (us)', fd)
+                        axes[row][col].set_title(f'{rtype}', fd)
+            else:
+                line, = axes[row][0].plot(d.offered, d[value+'_slowdown'], marker=m[pol], linestyle=l[pol], color=c[pol])
+                line.set_label(pol_names[pol] + " (" + system_pol[pol_inter] + ')')
+    #             axes[row][0].set_yscale('log')
+                if use_ylim:
+                    axes[row][0].set_ylim(bottom=-5, top=workloads[dist]['UNKNOWN']['YLIM'])
+#                     axes[row][0].set_ylim(bottom=-5, top=3500)
+                axes[row][0].set_xlim(left=left, right=workloads[dist]['max_load']/1000)
+#                 axes[row][0].set_xlim(left=left, right=4000)
+                axes[row][0].grid(b=True, axis='y', linestyle='-', linewidth=1)
+                axes[row][0].set_title('Overall', fd)
+                axes[row][0].set_ylabel(f'p99.9 slowdown', fd)
+
+                for i, rtype in enumerate(req_types[:ncols-1]):
+                    col = i + 1
+                    type_df = typed_d[typed_d.type == rtype]
+                    line, = axes[row][col].plot(type_df.offered, type_df[value], marker=m[pol], linestyle=l[pol], color=c[pol])
+    #                 line.set_label(pol + "\n(" + system_pol[pol_inter] + ')')
+    #                 axes[row][col].set_yscale('log')
+    #                 axes[row][col].yaxis.get_major_formatter().set_scientific(False)
+                    if use_ylim:
+#                         axes[row][col].set_ylim(bottom=-5, top=3500)
+                        axes[row][col].set_ylim(bottom=-5, top=workloads[dist][rtype]['YLIM'])
+                    axes[row][col].set_xlim(left=left, right=workloads[dist]['max_load']/1000)
+#                     axes[row][0].set_xlim(left=left, right=4000)
+
+                    axes[row][col].grid(b=True, axis='y', linestyle='-', linewidth=1)
+                    if col == 1:
+                         axes[row][col].set_ylabel(f'p99.9 latency (us)', fd)
+
+                    # Here add second axis with achieved. Plot offered
+    #                 goodput_ax = axes[row][col].twinx()
+    #                 goodput_ax.plot(type_df.offered, type_df.achieved, alpha=0.001)
+
+    #                 axes[row][col].set_title(f'{alph[i+1]} {rtype}', fd)
+                    axes[row][col].set_title(f'{rtype}', fd)
+
+        fig.text(0.5, 0.02, 'Throughput (kRPS)', fd, ha='center', va='center')
+#         fig.text(0.08, 0.5, f'{value} (us)', fd, ha='center', va='center', rotation='vertical')
+#         row_labels.append(workloads[dist]['name'])
+
+    pad = 5
+    for ax, col in zip(axes[:,0], row_labels):
+        ax.annotate(col, xy=(0,.5), xytext=(-ax.yaxis.labelpad - pad, 0),
+                    xycoords=ax.yaxis.label, textcoords='offset points',
+                    size='large', ha='right', va='center', rotation=90)
+
+#     plt.xlabel('Goodput (kRPS)', fontsize=18)
+#     plt.ylabel('p99 latency (us)', fontsize=16)
+
+#     page_mean = df['PAGE mean (ns)'].mean()
+#     yticks = axes[0][0].get_yticks()
+#     yticks_labels = ['{}'.format(tick) for tick in yticks]
+# #     yticks_labels = ['{} / {:.2f}'.format(tick, tick/page_mean) for tick in yticks]
+#     axes[0][0].set_yticklabels(yticks_labels)
+#     axes[0][0].set_ylabel('p99 latency (ns) / factor of mean latency');
+
+
+#     axes[0][0].legend()
+#     for row in range(nrows):
+    if app == 'SILO' or app == 'TPCC':
+        bbox = (1,1.15,5.5,0)
+    else:
+#         bbox = (-.5,1.4,2,0.2) # all 4 workloads
+#         bbox = (0,1.2,1,0) # only slowdown
+        if ncols == 2:
+            bbox= (0.125,1.2,2,0) # slowdown and longs
+        else:
+            bbox =(.75, 1.2, 2, 0) # slowdown and both types
+    leg = axes[0][0].legend(loc='upper center', bbox_to_anchor=bbox, ncol=4, fancybox=True, shadow=True, frameon=True, mode='expand', borderaxespad=-1)
+    for legobj in leg.legendHandles:
+        legobj.set_linewidth(2.0)
+#     plt.rcParams['legend.title_fontsize'] = 'xx-small'
+#     plt.subplots_adjust(left=0.05, bottom=None, right=0.95, top=None, wspace=0.3, hspace=0)
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=.8, wspace=None, hspace=None)
+#     fig.set_canvas(plt.gcf().canvas)
+    plt.savefig(f'/psp/experiments/{distros[0]}.pdf', format='pdf')
+#     gs1 = gridspec.GridSpec(23, 8)
+#     gs1.update(wspace=0.025, hspace=0.05) # set the spacing between axes.
+#     set_size(20,5)
+#     fig.tight_layout()
+
+def set_size(w,h, ax=None):
+    """ w, h: width, height in inches """
+    if not ax: ax=plt.gca()
+    l = ax.figure.subplotpars.left
+    r = ax.figure.subplotpars.right
+    t = ax.figure.subplotpars.top
+    b = ax.figure.subplotpars.bottom
+    figw = float(w)/(r-l)
+    figh = float(h)/(t-b)
+    ax.figure.set_size_inches(figw, figh)
+
+
+def plot_wcc(distro, value='p99', **kwargs):
+    req_types = apps['MB']
+    df, typed_df = prepare_pctl_data(req_types, exp_file=distro, **kwargs)
+#     print(data)
+
+    # 1 subplot
+    fig, ax = plt.subplots(1, 1, figsize=(6.5,3.25))
+    ax.set_ylabel(f'{value} slowdown', fd)
+    ax.set_xlabel('Number of reserved workers', fd)
+    ax.grid(b=True, axis='y', linestyle='-', linewidth=1)
+    for pol_inter, pol in policies.items():
+        typed_d = typed_df[typed_df.policy == pol].sort_values(by=['reserved'])
+        typed_d = typed_d[typed_d.type == 'SHORT']
+        d = df[df.policy == pol].sort_values(by=['load'])
+        if d.empty or typed_d.empty:
+            print(f"{pol} empty")
+            continue
+#         print(typed_d)
+
+        # Plot DARC with varying reserved cores
+        line, = ax.plot(d.reserved, d[value+'_slowdown'], marker='^', linestyle='solid', color='green', label='DARC-static')
+
+        # Plot DARC algorithm selection
+        ax.axvline(x=2, color='green', linestyle='dashed', label='DARC')
+
+    # Plot straight lines for cFCFS and FP
+    # SBIM2: 3542 in shenango, 3174 in psp
+    # DISP2: 110
+    ax.plot(np.arange(0,14), [3542]*14, linestyle='dashed', color='black', label='c-FCFS')
+#     ax.legend(loc="upper right", ncol=3,  bbox_to_anchor=(-.1, 1.375, 1, 0))
+    ax.set_yscale('log')
+    ax.set_ylim(top=1e4)
+#     plt.title('(a)', fd)
+    fig.tight_layout()
+
+def plot_tp(exps, hue=False):
+    plt.close('all')
+    fig, axes = plt.subplots(len(exps), 1, squeeze=False, num=1)
+    for i, exp in enumerate(exps):
+        df = read_client_tp(exp)
+        df.N *= 1000
+#         print('{} overall max throughput: {}'.format(exp, int(df.groupby(['W_ID', 'TYPE']).N.max())))
+        print('{} overall average throughput: {}'.format(exp, int(df.groupby(['W_ID', 'TYPE']).N.mean().sum())))
+        print('{} average {} throughput: {}, average {} throughput: {}'.format(
+            exp,
+            'SHORT', int(df[df.TYPE == 'SHORT'].groupby('W_ID').N.mean().sum()),
+            'LONG', int(df[df.TYPE == 'LONG'].groupby('W_ID').N.mean().sum()),
+        ))
+        df.TIME -= min(df.TIME)
+        if hue:
+            sns.lineplot(x='TIME', y='N', data=df, hue='TYPE', ax=axes[i][0], ci=None)
+        else:
+            sns.lineplot(x='TIME', y='N', data=df, ax=axes[i][0], ci=None)
+#         axes[i][0].set_ylim(ymin=0)
+
+def plot_allocs(exp):
+    plt.close('all')
+    fname = os.path.join('/home/maxdml/experiments', exp, 'server', 'windows');
+    with open(fname, 'r') as f:
+        df = pd.read_csv(fname, delimiter='\t')
+    df.TIME -= min(df.TIME)
+    df.TIME /= 1e9
+    fig, axes = plt.subplots(3, 1, squeeze=False)
+    sns.scatterplot(x='TIME', y='RES', data=df, hue="GID", ax=axes[0][0], s=16)
+#     for gid in df.GID.unique():
+#         gdf = df[df.GID == gid]
+#         gdf.TIME -= min(gdf.TIME)
+#         sns.scatterplot(x='TIME', y='RES', data=gdf, ax=axes[0][0], s=16, label=gid)
+    time_series = df[df.GID == 0].reset_index()
+    time_series = time_series.TIME - time_series.TIME.shift()
+    print(time_series.describe())
+    sns.scatterplot(data=time_series, ax=axes[1][0], hue="GID", s=16, label=0)
+    axes[1][0].get_legend().remove()
+    sns.scatterplot(x='TIME', y='COUNT', data=df, hue='GID', ax=axes[2][0] ,color='black')
+    axes[2][0].get_legend().remove()
+#     axes[2][0].set_ylim(top=100000)typed_lat_df
+
+#TODO: setup the right color/markers for each exp
+#TODO: check that schedule is the same across experiments
+def plot_agg_p99_over_time(exps, app='MB', debug=False, **kwargs):
+    if not isinstance(exps, list):
+        exps = [exps]
+    req_types = apps[app] # Assume the schedule has the same types
+    req_names = {'SHORT': 'A', 'LONG': 'B'}
+
+    style = {}
+#     colors = list(mcolors.TABLEAU_COLORS.keys())
+#     colors = ['#377eb8', '#ff7f00', '#4daf4a',
+#                   '#f781bf', '#a65628', '#984ea3',
+#                   '#999999', '#e41a1c', '#dede00']
+    colors = ['black'] * len(exps) * 2
+    markers = ['p', '^', 'o', 'v', '<', '>', 'x', 'h', 'X', '+']
+    lsizes = {'c-FCFS': .25, "DARC": 2.5}
+    msizes = {'c-FCFS': 4, "DARC": 7}
+    for exp in exps:
+        pol = policies[exp.split('_')[0]]
+        if pol == 'DARC':
+            pol = 'DARC'
+        for rtype in req_types:
+            name = req_names[rtype] + '_' + pol if len(exps) > 1 else req_names[rtype]
+            style[name] = {}
+            style[name]['color'] = colors[len(style.keys()) - 1]
+            style[name]['marker'] = markers[len(style.keys()) - 1]
+            style[name]['line'] = linestyles[len(style.keys()) - 1]
+    c = {t: color for t, color in zip(req_types, colors)}
+    background_filled = False
+    # Plot each req type
+    plt.close('all')
+    t0 =  time.time()
+    setups = prepare_traces(exps, ['client-end-to-end'], pctl=1, clients=[0,1,2,3,4,5], seconds=False, get_schedule_data=True, **kwargs)
+    nrows = 2
+    if debug:
+        nrows += 2
+    fig, axes = plt.subplots(nrows, 1, squeeze=False, num=1, sharex=True, figsize=(12,5))
+    max_y = 0
+    for e, exp in enumerate(exps):
+        pol = policies[exp.split('_')[0]]
+        if pol == 'DARC':
+            pol = 'DARC'
+        df, throughput_df, schedule, alloc = setups[exp]['bins'], setups[exp]['tp'], setups[exp]['schedule'], setups[exp]['alloc']
+        for i, req_type in enumerate(req_types):
+            typed_lat_df = df[df.REQ_TYPE == req_type]
+    #         print(typed_lat_df.VALUE.describe([.25, .5, .75, .9, .99, .999, .9999]))
+            # Groupby bins and get p99.9
+            total_p999 = typed_lat_df.VALUE.quantile(.999) / 1000
+    #         total_p99 = typed_lat_df.VALUE.quantile(.99) / 1000
+    #         total_p90 = typed_lat_df.VALUE.quantile(.9) / 1000
+    #         total_p50 = typed_lat_df.VALUE.quantile(.5) / 1000
+    #         import pdb; pdb.set_trace()
+            lat_df = typed_lat_df.groupby(['time_bin'])[['VALUE', 'SCHED_ID']].quantile(0.999).reset_index() # This is a shitty/buggy way to keep the sched_id
+            lat_df.VALUE /= 1000
+            if max(lat_df.VALUE) > max_y:
+                max_y = max(lat_df.VALUE) + max(lat_df.VALUE)*.05
+            axes[0][0].hlines(y=total_p999, xmin=0, xmax=max(lat_df.index/1e1), linestyles=':', color=c[req_type], label=req_names[req_type] +'_p999')
+    #         axes[0][0].hlines(y=total_p99, xmin=0, xmax=max(lat_df.index/1e1), linestyles='-.', color=c[req_type], label=req_names[req_type] +'_p99')
+    #         axes[0][0].hlines(y=total_p90, xmin=0, xmax=max(lat_df.index/1e1), linestyles='--', color=c[req_type], label=req_names[req_type] +'_p90')
+    #         axes[0][0].hlines(y=total_p50, xmin=0, xmax=max(lat_df.index/1e1), linestyles='-', color=c[req_type], label=req_names[req_type] +'_p50')
+            label = req_names[req_type] + '_' + pol if len(exps) > 1 else req_names[req_type]
+            if debug:
+                sns.lineplot(
+                    x=lat_df.index / 1e1, y='VALUE', data=lat_df, ax=axes[0][0], hue="SCHED_ID",
+                    color=style[label]['color'], marker=style[label]['marker'],  markersize=7,
+                    style="SCHED_ID", label=label
+                )
+#                 typed_tp_df = throughput_df[throughput_df.TYPE == req_type]
+#                 sns.lineplot(x=typed_tp_df.TIME/1e9, y='N', data=typed_tp_df, ax=axes[2][0], color=c[req_type])
+#                 axes[2][0].set_ylabel(f'Throughput (Krps)', fd)
+            else:
+                sns.lineplot(
+                    x=lat_df.index / 1e1, y='VALUE', data=lat_df, ax=axes[0][0],
+                    color=style[label]['color'], marker=style[label]['marker'], linewidth=lsizes[pol], markersize=msizes[pol],
+                    label=label
+                )
+        axes[0][0].set_ylabel(f'p99.9 latency (us)', fd)
+        axes[0][0].set_xlabel('')
+
+        # Add a row for core allocation
+        if not alloc.empty:
+            pal_start = e*len(req_types)
+            pal_end = e*len(req_types) + len(alloc.GID.unique())
+            # Core allocation
+            sns.lineplot(x='START', y='RES', data=alloc, hue="GID", ax=axes[1][0], palette=colors[pal_start:pal_end], markers=['p', '^'], style='GID', dashes=False, markersize=9)
+            axes[1][0].set_xlabel('')
+            axes[1][0].set_ylabel(f'Core allocation', fd)
+            axes[1][0].get_legend().remove()
+            if debug:
+                # Qlen at allocation time
+                sns.lineplot(x='START', y='QLEN', data=alloc, hue="GID", ax=axes[3][0], palette=list(mcolors.TABLEAU_COLORS.keys())[pal_start:pal_end], markers=['p','^'], markersize=7)
+                axes[3][0].set_xlabel('')
+                axes[3][0].set_ylabel(f'Qlen at allocation', fd)
+                axes[3][0].get_legend().remove()
+
+    # Fill background // Assume same schedule across provided experiments
+#     offset = 0
+    start_times_df = df.groupby('SCHED_ID').time_bin.min()
+    start_times = np.insert(start_times_df[1:].apply(lambda x: x.left).values, 0, 0)
+    end_times = np.append(start_times[1:], max(df.TIME))
+    schedule = setups[exps[0]]['schedule']
+    for w, workload in enumerate(schedule):
+#         start_time = offset
+#         end_time = (start_time + workload['duration'])
+#         offset += workload['duration']
+        start = start_times[w] / 1e9
+        end = end_times[w] / 1e9
+        print(f'filling between {start} and {end}')
+        for n in range(nrows):
+            axes[n][0].axvspan(start, end, alpha=.1, color=list(mcolors.TABLEAU_COLORS.keys())[w%2])# color=colors[w%2])
+            axes[n][0].axvline(x=start, linewidth=1, color='black', dashes=(5, 2, 1, 2))
+        wl = gen_wl_dsc(workload, req_names)
+        axes[0][0].text(
+            start + .5, max_y, wl, style='italic', fontsize=12,
+#             height=None,
+            bbox={'facecolor': 'green', 'alpha': 0.5, 'boxstyle': 'round'}#, 'pad': -1}
+        )
+
+    axes[-1][0].set_xlabel(f'Sending time (seconds)', fd)
+    axes[0][0].set_ylim(bottom=-5, top=1000)
+
+    if debug:
+#         handles, labels = axes[0][0].get_legend_handles_labels()
+#         axes[0][0].legend(handles=[], labels=[])
+        axes[0][0].get_legend().remove()
+
+
+    #     h, _ = axes[0][0].get_legend_handles_labels()
+        fig.legend(loc='right')#, handles=h)
+    #     print(axes[0][0].lines.get_legend_handles_labels())
+    print(f'plotted data in {time.time() - t0}')
