@@ -44,7 +44,7 @@ parser.add_argument('-C', '--n-clt-threads', type=str, default='1')
 parser.add_argument('-T', '--parse-test', dest='parse_test', action='store_true')
 parser.add_argument('-a', '--app-type', type=str, default='MB')
 parser.add_argument('-d', '--downsample', type=int, default=-1)
-parser.add_argument('-b', '--base-output', type=str, default='../experiments')
+parser.add_argument('-b', '--base-output', type=str, default='/psp/experiments')
 # env
 args = parser.parse_args()
 DIR = os.path.dirname(os.path.abspath(__file__))
