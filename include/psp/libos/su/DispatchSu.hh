@@ -78,6 +78,7 @@ class Dispatcher : public Worker {
     public: TypeGroups groups[MAX_TYPES];
     private: float delta = 0.2; // Similarity factor
     public: bool first_resa_done;
+    public: bool dynamic;
     public: profiling_windows windows[MAX_WINDOWS];
     private: uint32_t prev_active;
     private: uint32_t n_windows = 0;

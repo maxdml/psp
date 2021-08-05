@@ -168,6 +168,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 /* We first start in cFCFS */
                 dpt.dp = Dispatcher::dispatch_mode::CFCFS;
                 dpt.first_resa_done = false;
+                dpt.dynamic = true;
                 /* Microbench reservation update overheads
                 double durations[1000];
                 for (int i = 0; i < 1000; ++i) {
@@ -193,6 +194,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 if (config["n_resas"].IsDefined()) {
                     dpt.dp = Dispatcher::dispatch_mode::DARC;
                     dpt.first_resa_done = true;
+                    dpt.dynamic = false;
                     uint32_t n_resas = config["n_resas"].as<uint32_t>();
 
                     RequestType *shorts = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::SHORT)]];

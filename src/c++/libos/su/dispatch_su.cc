@@ -274,7 +274,7 @@ int Dispatcher::dispatch() {
             PSP_OK(update_darc());
         }
     //} else if ((cur_tsc - windows[n_windows].tsc) > UPDATE_PERIOD and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
-    } else if (dp == DARC and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
+    } else if (dp == DARC and likely(dynamic) and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
         for (uint32_t i = 0; i < n_rtypes; ++i) {
             if ((rtypes[i]->rqueue_head - rtypes[i]->rqueue_tail) < 2)
                 continue;
