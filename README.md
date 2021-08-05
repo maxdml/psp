@@ -105,7 +105,8 @@ On a machine that is *not* one of the 7 cloudlab nodes, we will set up an enviro
 Build and start the container:
 ```bash
 git clone --recurse-submodules https://github.com/maxdml/psp.git
-sudo docker build -t ubuntu-aec psp/sosp_aec
+cd psp
+sudo docker build -t ubuntu-aec .
 sudo docker run -p 8888:8888 ubuntu-aec
 ```
 
@@ -122,6 +123,9 @@ Send a dummy ssh command to each of the node to validate their certificate.
 NODES=('236' '237' '229' '223' '240' '227' '244')
 for node in ${NODES[@]}; do ssh -i ~/path/to/your/private/key user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
+
+Reproducing results
+----------------
 
 Then go to localhost:8888 on your browser. Open the notebook "aec.ipynb".
 The notebook has one cell per figure in the paper. You can gather data from the notebook or the terminal. Each cell has a commented command to run a script. However, this is a somewhat lengthy process and you might want to run them in a terminal. To do so, execute `sudo docker exec -it IMAGE_ID /bin/bash`, then run the command provided in the notebook.
