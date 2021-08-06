@@ -972,40 +972,29 @@ def set_size(w,h, ax=None):
 
 def plot_wcc(exp_file, value='p99', darc_cores=2, **kwargs):
     req_types = apps['MB']
-    df, typed_df = prepare_pctl_data(req_types, exp_file=exp_file, **kwargs)
-#     print(data)
+    df, typed_df = prepare_pctl_data(req_types, exp_file=distro, **kwargs)
+    df = df[df.policy == 'DARC'].sort_values(by=['load'])
+    typed_df = typed_df[typed_df.policy == 'DARC'].sort_values(by=['reserved'])
 
     # 1 subplot
-    fig, ax = plt.subplots(1, 1, figsize=(6.5,3.25))
+    fig, ax = plt.subplots(1, 1, figsize=(6.5, 3.25))
     ax.set_ylabel(f'{value} slowdown', fd)
     ax.set_xlabel('Number of reserved workers', fd)
     ax.grid(b=True, axis='y', linestyle='-', linewidth=1)
-    for pol_inter, pol in policies.items():
-        typed_d = typed_df[typed_df.policy == pol].sort_values(by=['reserved'])
-        typed_d = typed_d[typed_d.type == 'SHORT']
-        d = df[df.policy == pol].sort_values(by=['load'])
-        if d.empty or typed_d.empty:
-            #print(f"{pol} empty")
-            continue
-#         print(typed_d)
 
-        # Plot DARC with varying reserved cores
-        # FIXME: Y is not correct
-        line, = ax.plot(d.reserved, d[value+'_slowdown'], marker='^', linestyle='solid', color='green', label='DARC-static')
-        y = df[(df.policy == 'DARC') & (df.type == 'UNKNOWN') & (df.reserved == darc_cores)]['p99.9_slowdown']
-        ax.add_patch(plt.Circle((darc_cores, 1.5), 0.15, color='green', fill=False))
+    # Plot DARC with varying reserved cores
+    line, = ax.plot(df.reserved, df[value+'_slowdown'], marker='^', linestyle='solid', color='green', label='DARC-static')
 
-        # Plot DARC algorithm selection
-        ax.axvline(x=darc_cores, color='green', linestyle='dashed', label='DARC')
+    # Plot DARC algorithm selection
+    y = df[(df.type == 'UNKNOWN') & (df.reserved == darc_cores)]['p99.9_slowdown']
+    ax.add_patch(matplotlib.patches.Ellipse((darc_cores, y), 1, 10, color='green', fill=False))
 
     # Plot straight lines for cFCFS and FP
     # SBIM2: 3542 in shenango, 3174 in psp
     # DISP2: 110
     #ax.plot(np.arange(0,14), [3542]*14, linestyle='dashed', color='black', label='c-FCFS')
-    ax.legend(loc="upper right", ncol=3,  bbox_to_anchor=(-.1, 1.375, 1, 0))
+    ax.legend(loc="upper left", ncol=1,  bbox_to_anchor=(.45, .15, 1.5, 1))
     ax.set_yscale('log')
-    #ax.set_ylim(top=1e4)
-#     plt.title('(a)', fd)
     fig.tight_layout()
 
 def plot_tp(exps, hue=False):

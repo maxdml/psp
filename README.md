@@ -112,16 +112,16 @@ sudo docker run -p 8888:8888 ubuntu-aec
 
 Then:
 - Log in the container to configure it `bash sudo docker exec -it IMAGE /bin/bash`
-- Setup your cloudlab private key in the container and set it to 600
+- Setup your cloudlab private key as `/root/.ssh/aec` set it to 600
 - In /psp/Shremote_cfgs/config, update:
-    - ssh_config.yml: ssh credential to cloudlab
+    - ssh_config.yml: set cloudlab username
     - hosts.yml: update "addr" for each machine (e.g., clnode42)
     - dirs.yml: set "log_dir" to a desirable path on cloudlab for storing results
 
 Send a dummy ssh command to each of the node to validate their certificate.
 ```bash
 NODES=('236' '237' '229' '223' '240' '227' '244')
-for node in ${NODES[@]}; do ssh -i ~/path/to/your/private/key user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
+for node in ${NODES[@]}; do ssh -i /root/.ssh/aec user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
 
 Reproducing results
