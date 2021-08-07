@@ -147,11 +147,9 @@ II. Experiments
     * Maybe add drops/goodput for longs?
 
 4) Figure 5
-- Shinjuku build and run needs path to config file in shremote config programs.yml
-- Test unbind call in shremote programs
-- Preemption tick for shinjuku
+- Shinjuku shremote {pol,offset,cfg} from run.py & shinjuku.yml
+- Preemption tick for shinjuku conf
 - Figure out the drops & stuff for shinjuku
-- c-PRE must be tunable from shremote.
 
 5) Figure 6
 6) Figure 7
