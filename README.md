@@ -120,8 +120,9 @@ Then:
 
 Send a dummy ssh command to each of the node to validate their certificate.
 ```bash
+# Update USERNAME bellow
 NODES=('236' '237' '229' '223' '240' '227' '244')
-for node in ${NODES[@]}; do ssh -i /root/.ssh/aec user@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
+for node in ${NODES[@]}; do ssh -i /root/.ssh/aec [USERNAME]@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
 
 Reproducing results
