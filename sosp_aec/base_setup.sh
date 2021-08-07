@@ -28,12 +28,9 @@ make -sj -C deps/rocksdb static_lib
 make -sj -C deps/opnew
 make -j
 
-# FIXME make sure we create the DB correctly for both servers
-make -C db
-cd db
-rm -r my_db
-./create_db
-cd ../
-
-# We will store experiment results here
-mkdir ${AE_DIR}/experiments
+# TODO RocksDB
+#make -C db
+#cd db
+#rm -r my_db
+#./create_db
+#cd ../
