@@ -48,7 +48,7 @@ On the server:
 ```bash
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh Persephone
 cd ${AE_DIR}/Persephone/build/src/c++/apps/app/
-sudo numactl -N0 -m0 psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
+sudo numactl -N0 -m0 ./psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
 ```
 
 On one client:
@@ -85,7 +85,7 @@ sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/build_and_run.sh $
 
 On the client update the server's NIC MAC address in the config file.
 One way to find the NIC MAC ID is through the Cloudlab portal, by clicking on the node. It should be the only 10Gbps NIC, eth1.
-In ${AE_DIR}/Persephone/sosp_aec/configs/base_client_sjk_cfg.yml, put that value in the field "remote_mac".
+In ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml, put that value in the field "remote_mac".
 ```bash
 sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
@@ -138,16 +138,19 @@ I. Setup
 
 II. Experiments
 
-- find a way to call base_start when switching systems
 - Call out which figure is long to plot and why
 
-3) Figure 4
-- Figure 4: update CFCFS line
+3) Figure 4-b
+- Explain & maybe fix last load point
+- Explain why DARC not being "optimal" compared to manual choice (c.f. flow control)
+    * Maybe add drops/goodput for longs?
 
 4) Figure 5
 - Shinjuku build and run needs path to config file in shremote config programs.yml
+- Test unbind call in shremote programs
 - Preemption tick for shinjuku
 - Figure out the drops & stuff for shinjuku
+- c-PRE must be tunable from shremote.
 
 5) Figure 6
 6) Figure 7
