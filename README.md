@@ -35,6 +35,7 @@ On the client machines:
 ```bash
 export AE_DIR=/usr/local/sosp
 git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout client; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
+${AE_DIR}/client/sosp_aec/base_start.sh client
 ```
 
 Simple client-server tests
@@ -53,7 +54,6 @@ sudo numactl -N0 -m0 ./psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_
 
 On one client:
 ```bash
-${AE_DIR}/client/sosp_aec/base_start.sh client
 sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
