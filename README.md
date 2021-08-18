@@ -80,7 +80,7 @@ On the server
 ```bash
 # We use base_start.sh to unbind the NIC from igb_uio
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh shinjuku
-sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/build_and_run.sh ${AE_DIR}/Persephone/sosp_aec/configs/base_shinjuku_conf
+sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/shinjuku -c ${AE_DIR}/Persephone/sosp_aec/configs/base_shinjuku_conf
 ```
 
 On the client update the server's NIC MAC address in the config file.
@@ -128,5 +128,5 @@ for node in ${NODES[@]}; do ssh -i /root/.ssh/aec [USERNAME]@clnode${node}.clems
 Reproducing results
 ----------------
 
-Then go to localhost:8888 on your browser. Open the notebook "aec.ipynb".
-The notebook has one cell per figure in the paper. You can gather data from the notebook or the terminal. Each cell has a commented command to run a script. However, this is a somewhat lengthy process and you might want to run them in a terminal. To do so, execute `sudo docker exec -it IMAGE_ID /bin/bash`, then run the command provided in the notebook.
+Go to localhost:8888 on your browser. Open the notebook "aec.ipynb".
+Each cell contains instructions to generate the data. To run the commands provided in the notebook, execute `sudo docker exec -it IMAGE_ID /bin/bash` to open a terminal in the container.

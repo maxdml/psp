@@ -1,3 +1,4 @@
+base_dir: '/usr/local/sosp'
 shremote_cfgs: '/psp/Shremote_cfgs'
 log_dir: '/proj/psp-PG0/maxdml/experiments/'
 psp_apps: '/usr/local/sosp/Persephone/build/src/c++/apps/'

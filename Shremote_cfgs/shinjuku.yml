@@ -29,6 +29,8 @@ params:
     schedule: $(getarg('schedule'))$
     load: $(getarg('load', 1.0))$
     preemption_tick: $(getarg('preemption-tick', 5000))$
+    policy: $(getarg('policy', 'cPRESQ'))$
+    req_offset: $(getarg('req_offset', 1))$
 
 programs: !include "config/programs.yml"
 
@@ -42,9 +44,7 @@ meta_files:
         src: '{0.output_dir}/client_cfg.yml'
         dst: '{host.output_dir}/client_cfg.yml'
 
-files: !include "cloudlab/shinjuku_files.yml"
-
-requests: !include "common/requests.yml"
+files: !include "config/shinjuku_files.yml"
 
 init_cmds:
     - cmd: >-
@@ -84,9 +84,9 @@ commands:
       hosts: server
       begin: 0
       max_duration: 120
-      cfg: {0.files.server_cfg.dst}
-      pol: {0.params.policy}
-      offset: {0.params.req_offset}
+      cfg: '{0.files.server_cfg.dst}'
+      pol: '{0.params.policy}'
+      offset: '{0.params.req_offset}'
       check_rtn: 130
 
     - program: psp_rate_client0

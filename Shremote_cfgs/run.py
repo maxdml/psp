@@ -66,12 +66,11 @@ else:
     CFG = os.path.join(DIR, "psp.yml")
 output_paths = []
 for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
-    TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
-    if args.darc_manual:
-        TITLE += f'_{args.darc_manual}'
-    TITLE += f'.{args.run_number}'
     for DP in args.policies:
         TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
+        if args.darc_manual > -1:
+            TITLE += f'_{args.darc_manual}'
+        TITLE += f'.{args.run_number}'
         shremote_args = [
             'python3', '-u',
             SHREMOTE, CFG, TITLE, '--out', BASE_OUTPUT, '--delete', '--',
@@ -88,16 +87,29 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
             '--load', str(LOAD)
         ]
         if args.system == 'shinjuku':
-                if args.schedule == 'TPCC' and DP == 'c-PRE-MQ':
-                    shremote_args.extend(['--n-ports', '5', '--preemption-tick', '15000'])
-                elif DP == 'c-PRE-MQ':
-                    shremote_args.extend(['--n-ports', '2', '--preemption-tick', '15000'])
-                elif DP == 'c-PRE-SQ':
-                    shremote_args.extend(['--n-ports', '1', '--preemption-tick', '15000'])
+            shinjuku_args = []
+            shinjuku_args.extend(['--policy', DP])
+            if args.schedule == 'TPCC' and DP == 'cPREMQ':
+                shinjuku_args.extend(
+                    ['--n-ports', '5', '--preemption-tick', '10000', '--req-offset', '5']
+                )
+            elif DP == 'cPREMQ':
+                shinjuku_args.extend(
+                    ['--n-ports', '2', '--req-offset', '1']
+                )
+            elif DP == 'cPRESQ':
+                shinjuku_args.extend(
+                    ['--n-ports', '1', '--req-offset', '2']
+                )
+            if args.schedule == 'DISP2' or args.schedule == 'SBIM2':
+                shinjuku_args.extend(['--premption-tick', '5000'])
+            elif args.schedule == 'ROCKSDB':
+                shinjuku_args.extend(['--premption-tick', '15000'])
+            shremote_args.extend(shinjuku_args)
         if args.parse_test:
             shremote_args.append('--parse-test')
         if args.darc_manual > -1:
-            shremote_args.extend(['--n-resas', str(args.darc_manual]))
+            shremote_args.extend(['--n-resas', str(args.darc_manual)])
         log_info(shremote_args)
         p = subprocess.Popen(shremote_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         while(1):

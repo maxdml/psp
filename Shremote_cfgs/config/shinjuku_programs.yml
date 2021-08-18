@@ -1,25 +1,20 @@
-psp_default: &PSP_DEFAULT
+psp_no_sched: &PSP_NO_SCHED
     start: >-
-        sudo numactl -N0 -m0 {0.dirs.psp_apps}/client/client
+        sudo numactl -N0 -m0 {0.dirs.clt}/client/client
         --config-path {config_file}
-        --duration {duration}
         --label {0.label}
         --ip {srv_ip}
         --port {srv_port}
         --max-concurrency {max_clt_cc}
         --sample {downsample}
-        --rate {rate}
-        --cmd-list {cmd_list}
-        --cmd-ratios {cmd_ratios}
-        --outdir {outdir}
         --collect-logs {collect_logs}
-        --ix-reqs
+        --outdir {outdir}
     stop: sudo kill {pid}
     check_rtn: 0
 
 shinjuku:
     start: >-
-        numactl -N0 -m0 /opt/shinjuku/build_and_run.sh
+        sudo numactl -N0 -m0 {0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku -c {cfg} -p {pol} -o {offset} {0.dirs.base_dir}
     stop: sudo killall shinjuku
     check_rtn: 0
     log:
@@ -27,43 +22,45 @@ shinjuku:
         log: server
         out: server.out
         err: server.err
+
 psp_rate_client0:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
+        append: 1
         dir: client0
         log: client0
         out: client.out
         err: client.err
 psp_rate_client1:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
         dir: client1
         log: client1
         out: client.out
         err: client.err
 psp_rate_client2:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
         dir: client2
         log: client2
         out: client.out
         err: client.err
 psp_rate_client3:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
         dir: client3
         log: client3
         out: client.out
         err: client.err
 psp_rate_client4:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
         dir: client4
         log: client4
         out: client.out
         err: client.err
 psp_rate_client5:
-    <<: *PSP_DEFAULT
+    <<: *PSP_NO_SCHED
     log:
         dir: client5
         log: client5

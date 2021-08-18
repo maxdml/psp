@@ -45,6 +45,7 @@ init_cmds:
         --dp-pol {0.params.srv_dispatch_pol} --app-type {0.params.app}
         --dpdk-dev-num {0.hosts.client0.dev_num} --dpdk-prefix {0.user}
         --schedule {0.params.schedule}
+        --n-resas {0.params.n_resas}
     - cmd: >-
         {0.dirs.shremote_cfgs}/format_scripts/format_psp_clients.py
         {0.meta_files.client_cfg.src}
@@ -56,10 +57,8 @@ init_cmds:
         --dpdk-dev-num {0.hosts.client0.dev_num} --dpdk-prefix {0.user}
         --cpus {0.params.clt_cpus}
         --schedule {0.params.schedule} --load {0.params.load}
-        --n-resas {0.params.n_resas}
 
 client_params: &clt_params
-      duration: $( {0.params.duration} )$
       max_duration: 40
       srv_ip: '{0.hosts.server.ip}'
       srv_port: 6789
