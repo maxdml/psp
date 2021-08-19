@@ -14,7 +14,7 @@
 	url = https://github.com/isaac-ped/Shremote
 [submodule "submodules/fake_work"]
 	path = submodules/fake_work
-	url = url = https://github.com/maxdml/fake_work
+	url = https://github.com/maxdml/fake_work
 [submodule "submodules/shenango"]
 	path = submodules/shenango
 	url = https://github.com/joshuafried/psp_shenango
