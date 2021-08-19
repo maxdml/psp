@@ -8,7 +8,7 @@ Steps have to be done on all machines, otherwise specified.
 ```bash
 # Install required packages.
 sudo apt-get update && sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y; sudo apt install -y cmake libboost-program-options-dev libboost-system-dev libboost-chrono-dev libboost-context-dev libnuma-dev libyaml-cpp-dev liblz4-dev libgflags-dev libsnappy-dev numactl msr-tools htop libconfig-dev software-properties-common; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y gcc-7 g++-7; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-export AE_DIR=/usr/local/
+export AE_DIR=/usr/local/sosp
 ```
 
 Take the first NUMA node out of CFS' domain and disable kaslr
