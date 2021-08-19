@@ -16,10 +16,10 @@ parser.add_argument('--runtime-guaranteed-kthreads', type=int, default=8)
 parser.add_argument('--runtime-spinning-kthreads', type=int, default=8)
 
 args = parser.parse_args()
-
+#FIXME host_ info should be dynamic
 config = f"host_addr {args.server_ip}\n"
 config += f"host_netmask 255.255.255.0\n"
-config += f"host_gateway 192.168.1.1\n"
+config += f"host_gateway 192.168.10.1\n"
 config += f"runtime_kthreads {args.runtime_kthreads}\n"
 config += f"runtime_guaranteed_kthreads {args.runtime_guaranteed_kthreads}\n"
 config += f"runtime_spinning_kthreads {args.runtime_spinning_kthreads}\n"

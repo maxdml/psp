@@ -20,9 +20,9 @@ Clone the repo:
 git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/Persephone
 ```
 
-In addition, Shinjuku requires Linux 4.4.0-187, so we will set it up on the *server* machine:
+Shinjuku requires Linux 4.4.0-187 and Shenango Linux 4.15, so we will install them on the *server* machine:
 ```bash
-sudo apt install -y linux-headers-4.4.0-187-generic linux-modules-4.4.0-187-generic linux-image-4.4.0-187-generic
+sudo apt install -y linux-headers-4.4.0-187-generic linux-modules-4.4.0-187-generic linux-image-4.4.0-187-generic linux-headers-4.15.0-142-generic linux-modules-4.15.0-142-generic linux-image-4.15.0-142-generic
 # Next boot will be on 4.4.0-187
 sudo ${AE_DIR}/Persephone/scripts/setup/pick_kernel.sh 4.4.0-187-generic
 ```
@@ -32,6 +32,17 @@ On the server machine:
 ${AE_DIR}/Persephone/sosp_aec/base_setup.sh
 ```
 This script will setup Perséphone, Shinjuku, and other dependent systems.
+
+Reboot on 4.15 to build Shenango:
+```bash
+sudo ${AE_DIR}/Persephone/scripts/setup/pick_kernel.sh 4.15.0-142-generic
+# Next boot will be on 4.15.0-142
+sudo reboot
+```
+Then:
+```bash
+${AE_DIR}/Persephone/sosp_aec/shenango_setup.sh
+```
 
 On the client machines:
 ```bash

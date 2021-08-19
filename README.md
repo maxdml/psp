@@ -31,6 +31,16 @@ ${AE_DIR}/Persephone/sosp_aec/base_setup.sh
 ```
 This script will setup Perséphone, Shinjuku, and other dependent systems.
 
+Shenango builds and runs on a different kernel, so we need to configure and restart the machine:
+```bash
+sudo ${AE_DIR}/Persephone/scripts/setup/pick_kernel.sh 4.15.0-142-generic
+sudo reboot
+```
+Then:
+```bash
+${AE_DIR}/Persephone/sosp_aec/shenango_setup.sh
+```
+
 On the client machines:
 ```bash
 export AE_DIR=/usr/local/sosp
@@ -76,7 +86,7 @@ If you see an output similar to the one bellow, the system works as expected. Yo
 >Port 0: _______ rx_flow_director_sb_match_packets:		4294967275  
 
 ### Shinjuku
-On the server
+On the server (reboot on 4.4.0-187 if needed)
 ```bash
 # We use base_start.sh to unbind the NIC from igb_uio
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh shinjuku
@@ -88,6 +98,24 @@ One way to find the NIC MAC ID is through the Cloudlab portal, by clicking on th
 In ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml, put that value in the field "remote_mac".
 ```bash
 sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
+```
+
+You should have a similar ouput than for Perséphone if this test worked correctly.
+
+### Shenango
+On one server terminal (reboot on 4.15.0-142 if needed)
+```bash
+${AE_DIR}/client/sosp_aec/base_start.sh shenango
+sudo ${AE_DIR}/Persephone/submodules/shenango/iokerneld ias 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 noht
+```
+On a second server terminal
+```bash
+numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shenango/apps/psp_fakework/psp_fakework ${AE_DIR}/Persephone/sosp_aec/configs/base_shenango_conf 6789
+```
+
+On a client machine
+```bash
+sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
 You should have a similar ouput than for Perséphone if this test worked correctly.
