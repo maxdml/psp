@@ -219,7 +219,9 @@ def prepare_traces(exps, data_types=list(trace_label_to_dtype), reset_time=True,
         workload = exp.split('_')[2].split('.')[0]
         if verbose:
             print(f'================= PREPARING DATA FOR EXP {exp} =================')
+        t0 = time.time()
         main_df = read_exp_traces(exp, verbose=verbose, **kwargs)
+        print(f'Loaded clients data in {time.time() - t0} seconds')
         if main_df.empty:
             print('No data for {}'.format(exp))
             continue
