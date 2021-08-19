@@ -1,0 +1,117 @@
+ssh: !include "config/ssh_config.yml"
+hosts: !include "config/hosts.yml"
+dirs: !include "config/dirs.yml"
+client_net: !include "config/client_net.yml"
+server_net: !include "config/server_net.yml"
+
+log_dir: {0.dirs.log_dir}
+
+params:
+    downsample: $(getarg('downsample', 0))$
+    srv_dispatch_pol: $(getarg('srv-dp', 'DFCFS'))$
+    clt_cpus: $(getarg('clt-cpus', '5'))$
+    srv_cpus: $(getarg('srv-cpus', '1 2 3 4 5 6 7 8 9'))$
+    max_clt_cc: $(getarg('max-clt-cc', 1))$
+    app: $(getarg('app', 'REST'))$
+    clt_threads: $(getarg('clt-threads', '2'))$
+    schedule: $(getarg('schedule'))$
+    load: $(getarg('load', 1.0))$
+    n_resas: $(getarg('n-resas', 0))$
+
+programs: !include "config/programs.yml"
+
+timing:
+    pre_start: 5
+    client_duration: 30
+    server_duration: 40
+
+meta_files:
+    client_cfg:
+        src: '{0.output_dir}/client_cfg.yml'
+        dst: '{host.output_dir}/client_cfg.yml'
+
+files: !include "config/files.yml"
+
+init_cmds:
+    - cmd: >-
+        mkdir -p {0.files.client_cmds_dir.src};
+        cp {0.params.schedule} {0.output_dir}
+    - cmd: >-
+        {0.dirs.shremote_cfgs}/format_scripts/format_shenango_runtime.py
+        {0.files.server_cfg.src}
+        --server-ip {0.server_net.ip} --server-mac {0.server_net.mac}
+        --client-ips {0.client_net.ips} --client-macs {0.client_net.macs}
+        --runtime-kthreads 8 --runtime-guaranteed-kthreads 8 --runtime-spinning-kthreads 8
+    - cmd: >-
+        {0.dirs.shremote_cfgs}/format_scripts/format_psp_clients.py
+        {0.meta_files.client_cfg.src}
+        --client-ips {0.client_net.ips} --client-macs {0.client_net.macs}
+        --clt-threads {0.params.clt_threads}
+        --server-ip {0.server_net.ip} --server-mac {0.server_net.mac}
+        --server-workers '$( len('{0.params.srv_cpus}'.split()) - 1 )$'
+        --log-dir '$(os.path.expanduser('{0.dirs.log_dir}'))$'
+        --dpdk-dev-num {0.hosts.client0.dev_num} --dpdk-prefix {0.user}
+        --cpus {0.params.clt_cpus}
+        --schedule {0.params.schedule} --load {0.params.load}
+
+client_params: &clt_params
+      max_duration: 40
+      srv_ip: '{0.hosts.server.ip}'
+      srv_port: 8001 8002 8003 8004 8005 8006 8007 8008
+      max_clt_cc: '{0.params.max_clt_cc}'
+      downsample: '{0.params.downsample}'
+      begin: 10
+
+commands:
+    - program: iokernel
+      hosts: server
+      begin: 0
+      max_duration: 70
+
+    - program: shenango-app
+      config: '{0.files.server_cfg.dst}'
+      hosts: server
+      begin: 5
+      max_duration: 60
+
+    - program: psp_rate_client0
+      hosts: client0
+      config_file: '{0.files.client0_cfg.dst}'
+      outdir: 'client0'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client1
+      hosts: client1
+      config_file: '{0.files.client1_cfg.dst}'
+      outdir: 'client1'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client2
+      hosts: client2
+      config_file: '{0.files.client2_cfg.dst}'
+      outdir: 'client2'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client3
+      hosts: client3
+      config_file: '{0.files.client3_cfg.dst}'
+      outdir: 'client3'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client4
+      hosts: client4
+      config_file: '{0.files.client4_cfg.dst}'
+      outdir: 'client4'
+      collect_logs: 1
+      <<: *clt_params
+
+    - program: psp_rate_client5
+      hosts: client5
+      config_file: '{0.files.client5_cfg.dst}'
+      outdir: 'client5'
+      collect_logs: 1
+      <<: *clt_params

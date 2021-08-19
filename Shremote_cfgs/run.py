@@ -60,8 +60,8 @@ if isinstance(args.policies, str):
 if args.system == 'shinjuku':
     SRV_CPUS = "2 34 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
     CFG = os.path.join(DIR, "shinjuku.yml")
-elif args.system == 'caladan':
-    CFG = os.path.join(DIR, "caladan.yml")
+elif args.system == 'shenango':
+    CFG = os.path.join(DIR, "shenango.yml")
 else:
     CFG = os.path.join(DIR, "psp.yml")
 output_paths = []
