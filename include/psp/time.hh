@@ -3,7 +3,7 @@
 #ifndef PSP_TIME_H_IS_INCLUDED
 #define PSP_TIME_H_IS_INCLUDED
 
-#define FREQ 2.2
+#define FREQ 2.6
 
 #include <asm/ops.h>
 #include <boost/chrono.hpp>
