@@ -41,7 +41,7 @@ sudo reboot
 ```
 Then:
 ```bash
-${AE_DIR}/Persephone/sosp_aec/shenango_setup.sh
+${AE_DIR}/Persephone/sosp_aec/build_shenango.sh
 ```
 
 On the client machines:
