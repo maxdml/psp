@@ -219,9 +219,7 @@ def prepare_traces(exps, data_types=list(trace_label_to_dtype), reset_time=True,
         workload = exp.split('_')[2].split('.')[0]
         if verbose:
             print(f'================= PREPARING DATA FOR EXP {exp} =================')
-        t0 = time.time()
         main_df = read_exp_traces(exp, verbose=verbose, **kwargs)
-        print(f'Loaded clients data in {time.time() - t0} seconds')
         if main_df.empty:
             print('No data for {}'.format(exp))
             continue
@@ -342,7 +340,7 @@ def merge_hists(df):
     base_cols['TOTAL'] = df['TOTAL'].sum()
 
     # This is stupid
-    buckets = list(map(str,sorted(list(map(int, df.drop(['MIN', 'MAX', 'COUNT', 'TOTAL'], axis=1).columns)))))
+    buckets = sorted(df.drop(['MIN', 'MAX', 'COUNT', 'TOTAL'], axis=1).columns)
     return pd.DataFrame({**base_cols, **dict(df[buckets].sum())}, index=[0])
 
 def compute_pctls(hist):
@@ -381,8 +379,8 @@ def parse_hist(rtypes, exps, clients=[], dt='client-end-to-end'):
     hists['all'] = {exp: {dt: None} for exp in exps}
     for exp in exps:
         wl = exp.split('_')[2].split('.')[0]
-        tdfs = {t: [] for t in rtypes}
-        for clt in clients:
+        tdfs = {t: {} for t in rtypes}
+        for i, clt in enumerate(clients):
             exp_folder = os.path.join(exp_base_folder, exp, 'client'+str(clt), '')
             filename = os.path.join(exp_folder, 'traces_hist')
             if not Path(filename).exists():
@@ -394,17 +392,34 @@ def parse_hist(rtypes, exps, clients=[], dt='client-end-to-end'):
                     t = values.split()[0]
                     if t == 'UNKNOWN':
                         continue
-                    tdfs[t].append(pd.DataFrame(
-                        {k:v for (k,v) in zip(header.split()[1:], values.split()[1:])},
-                        index=[0]
-                    ))
+                    if i == 0:
+                        tdfs[t]['MIN'] = int(values.split()[1])
+                        tdfs[t]['MAX'] = int(values.split()[2])
+                        tdfs[t]['COUNT'] = int(values.split()[3])
+                        tdfs[t]['TOTAL'] = int(values.split()[4])
+                        tdfs[t].update(
+                            {int(k):int(v) for (k,v) in zip(header.split()[5:], values.split()[5:])}
+                        )
+                    else:
+                        if int(values.split()[1]) < tdfs[t]['MIN']:
+                            tdfs[t]['MIN'] = int(values.split()[1])
+                        if int(values.split()[2]) > tdfs[t]['MAX']:
+                            tdfs[t]['MAX'] = int(values.split()[2])
+                        tdfs[t]['COUNT'] += int(values.split()[3])
+                        tdfs[t]['TOTAL'] += int(values.split()[4])
+                        for k, v in zip(header.split()[5:], values.split()[5:]):
+                            if int(k) in tdfs[t]:
+                                tdfs[t][int(k)] += int(v)
+                            else:
+                                tdfs[t][int(k)] = int(v)
 
         if len(clients) > len(tdfs[rtypes[0]]):
             print(f'[{exp}] Missing {len(clients) - len(tdfs[rtypes[0]])} client histogram(s)')
         # Compute percentiles for request types
         typed_hists = {}
         for t in rtypes:
-            typed_hists[t] = merge_hists(pd.concat(tdfs[t]).fillna(0).astype('uint64'))
+            #typed_hists[t] = merge_hists(pd.concat(tdfs[t]).fillna(0).astype('uint64'))
+            typed_hists[t] = pd.DataFrame(tdfs[t], index=[0]).astype('uint64')
             hists[t][exp][dt] = compute_pctls(typed_hists[t])
             hists[t][exp][dt]['p99_slowdown'] = hists[t][exp][dt]['p99'] / workloads[wl][t]['MEAN']
             hists[t][exp][dt]['p99.9_slowdown'] = hists[t][exp][dt]['p99.9'] / workloads[wl][t]['MEAN']
@@ -974,7 +989,7 @@ def set_size(w,h, ax=None):
 
 def plot_wcc(exp_file, value='p99', darc_cores=2, **kwargs):
     req_types = apps['MB']
-    df, typed_df = prepare_pctl_data(req_types, exp_file=distro, **kwargs)
+    df, typed_df = prepare_pctl_data(req_types, exp_file=exp_file, **kwargs)
     df = df[df.policy == 'DARC'].sort_values(by=['load'])
     typed_df = typed_df[typed_df.policy == 'DARC'].sort_values(by=['reserved'])
 
