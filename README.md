@@ -53,8 +53,6 @@ Simple client-server tests
 ---------------------------------
 We will now make sure that all three systems work (Perséphone, Shinjuku, Shenango).
 
-In the following steps, please set the "log_dir" entry to "${AE_DIR}/experiments/" in the YAML configuration files.
-
 ### Perséphone
 On the server:
 ```bash
@@ -146,7 +144,6 @@ Then:
 - In /psp/Shremote_cfgs/config, update:
     - ssh_config.yml: set cloudlab username
     - hosts.yml: update "addr" for each machine (e.g., clnode42)
-    - dirs.yml: set "log_dir" to a desirable path on cloudlab for storing results
 - In /psp/Shremote_cfgs/shinjuku.yml, update the server MAC address ("server_net.mac" field)
 
 Send a dummy ssh command to each of the node to validate their certificate.
