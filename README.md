@@ -46,6 +46,7 @@ On the client machines:
 export AE_DIR=/usr/local/sosp
 git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout client; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
 ${AE_DIR}/client/sosp_aec/base_start.sh client
+mkdir /dev/shm/experiments
 ```
 
 Simple client-server tests
@@ -139,7 +140,8 @@ sudo docker run -p 8888:8888 ubuntu-aec
 ```
 
 Then:
-- Log in the container to configure it `bash sudo docker exec -it IMAGE /bin/bash`
+- Log in the container to configure it `bash sudo docker exec -it CONTAINER_ID /bin/bash`
+- You can find the docker container ID with `sudo docker ps`
 - Setup your cloudlab private key as `/root/.ssh/aec` set it to 600
 - In /psp/Shremote_cfgs/config, update:
     - ssh_config.yml: set cloudlab username

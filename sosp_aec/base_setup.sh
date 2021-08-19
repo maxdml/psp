@@ -34,3 +34,5 @@ make -j
 #rm -r my_db
 #./create_db
 #cd ../
+
+mkdir /dev/shm/experiments

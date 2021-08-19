@@ -14,6 +14,7 @@ parser.add_argument('--directpath', type=int, default=0)
 parser.add_argument('--runtime-kthreads', type=int, default=8)
 parser.add_argument('--runtime-guaranteed-kthreads', type=int, default=8)
 parser.add_argument('--runtime-spinning-kthreads', type=int, default=8)
+parser.add_argument('--policy', type=str, default='CFCFS')
 
 args = parser.parse_args()
 #FIXME host_ info should be dynamic
@@ -27,6 +28,8 @@ config += f"disable_watchdog true\n"
 config += f"runtime_priority lc\n"
 #config += f"enable_directpath {args.directpath}\n"
 config += f"host_mac {args.server_mac}\n"
+if args.policy == 'DFCFS':
+    config += f"disable_stealing 1\n"
 for ip, mac in zip(args.client_ips, args.client_macs):
     config += f"static_arp {ip} {mac}\n"
 

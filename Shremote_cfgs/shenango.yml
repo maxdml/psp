@@ -17,6 +17,7 @@ params:
     schedule: $(getarg('schedule'))$
     load: $(getarg('load', 1.0))$
     n_resas: $(getarg('n-resas', 0))$
+    policy: $(getarg('policy', 'CFCFS'))$
 
 programs: !include "config/programs.yml"
 
@@ -42,6 +43,7 @@ init_cmds:
         --server-ip {0.server_net.ip} --server-mac {0.server_net.mac}
         --client-ips {0.client_net.ips} --client-macs {0.client_net.macs}
         --runtime-kthreads 14 --runtime-guaranteed-kthreads 14 --runtime-spinning-kthreads 14
+        --policy {0.params.policy}
     - cmd: >-
         {0.dirs.shremote_cfgs}/format_scripts/format_psp_clients.py
         {0.meta_files.client_cfg.src}

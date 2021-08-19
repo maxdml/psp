@@ -1,6 +1,6 @@
 base_dir: '/usr/local/sosp'
 shremote_cfgs: '/psp/Shremote_cfgs'
-log_dir: '/proj/psp-PG0/maxdml/experiments/'
+log_dir: '/dev/shm/experiments/'
 psp_apps: '/usr/local/sosp/Persephone/build/src/c++/apps/'
 clt: '/usr/local/sosp/client/build/src/c++/apps/'
 shenango: '/usr/local/sosp/Persephone/submodules/shenango'

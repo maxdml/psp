@@ -108,6 +108,8 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
             elif args.schedule == 'ROCKSDB':
                 shinjuku_args.extend(['--premption-tick', '15000'])
             shremote_args.extend(shinjuku_args)
+        elif args.system == 'shenango':
+            shremote_args.extend(['--policy', DP])
         if args.parse_test:
             shremote_args.append('--parse-test')
         if args.darc_manual > -1:
