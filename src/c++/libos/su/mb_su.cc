@@ -28,6 +28,7 @@ int MbWorker::process_request(unsigned long payload) {
         uint64_t start = rdtscp(NULL);
     */
         fake_work(nloops);
+        //fake_work2(*reinterpret_cast<unsigned int *>(req_addr), FREQ);
     /*
         uint64_t end = rdtscp(NULL);
         durations[i] = (end - start) / 2.5;
