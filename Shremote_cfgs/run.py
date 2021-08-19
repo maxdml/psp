@@ -68,8 +68,10 @@ output_paths = []
 for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
     for DP in args.policies:
         TITLE = f'{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
+        if args.system == 'shenango':
+            TITLE = f'shen-{DP}_{(LOAD):.2f}_{args.schedule}_{args.n_workers}'
         if args.darc_manual > -1:
-            TITLE += f'_{args.darc_manual}'
+            TITLE += f'_manual{args.darc_manual}'
         TITLE += f'.{args.run_number}'
         shremote_args = [
             'python3', '-u',

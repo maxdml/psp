@@ -118,8 +118,8 @@ apps = {
 policies = {
     'DFCFS': 'd-FCFS',
     'CFCFS': 'c-FCFS',
-    'shen-d-FCFS': 'shen-d-FCFS',
-    'shen-c-FCFS': 'shen-c-FCFS',
+    'shen-DFCFS': 'shen-d-FCFS',
+    'shen-CFCFS': 'shen-c-FCFS',
     'SJF': 'ARS-FP',
     'EDF': 'EDF',
 #     'CSCQ-half': 'CSCQ-half',
@@ -139,8 +139,8 @@ pol_names = {
     'c-PRE-SQ': 'c-PRE',
     'ARS-FP': 'FP',
     'EDF': 'EDF',
-    'shen-d-FCFS': 'd-FCFS',
-    'shen-c-FCFS': 'c-FCFS'
+    'shen-DFCFS': 'd-FCFS',
+    'shen-CFCFS': 'c-FCFS'
 }
 
 system_pol = {

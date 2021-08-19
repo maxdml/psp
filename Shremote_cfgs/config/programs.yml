@@ -32,32 +32,32 @@ psp_no_sched: &PSP_NO_SCHED
     stop: sudo kill {pid}
     check_rtn: 0
 
-    iokernel:
-        start: sudo numactl -N0 -m0 {0.dirs.shenango}/iokerneld
-        stop: sudo kill {pid}
-        check_rtn: 143
-        log:
-            dir: iokernel
-            log: iokernel
-            out: iokernel.out
-            err: iokernel.err
+iokernel:
+    start: sudo numactl -N0 -m0 {0.dirs.shenango}/iokerneld ias 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 noht
+    stop: sudo kill {pid}
+    check_rtn: -1
+    log:
+        dir: iokernel
+        log: iokernel
+        out: iokernel.out
+        err: iokernel.err
 
-    shenango-app:
-        start: >-
-            sudo numactl -N0 -m0 {0.dirs.shenango}/apps/{0.app} {config} {0.params.n_workers}
-        stop: sudo kill {pid}
-        check_rtn: 143
-        log:
-            dir: server
-            log: server
-            out: server.out
-            err: server.err
+shenango-app:
+    start: >-
+        sudo numactl -N0 -m0 {0.dirs.shenango}/apps/psp_fakework/psp_fakework {config} 6789
+    stop: sudo kill {pid}
+    check_rtn: -1
+    log:
+        dir: server
+        log: server
+        out: server.out
+        err: server.err
 
 shinjuku:
     start: >-
         numactl -N0 -m0 /usr/local/sosp/Persephone/submodules/shinjuku/build_and_run.sh {cfg} {pol} {offset}
     stop: sudo killall shinjuku
-    check_rtn: 0
+    check_rtn: -1
     log:
         dir: server
         log: server

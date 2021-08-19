@@ -2,7 +2,7 @@ server_cfg:
     hosts: server
     template: '{0.dirs.shremote_cfgs}/cfg_templates/shinjuku.conf'
     src: '{0.output_dir}/shinjuku.conf'
-    dst: '/usr/local/sosp/Persephone/submodules/shinjuku/shinjuku.conf'
+    dst: '{0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku.conf'
 client0_cfg:
     hosts: client0
     src: '{0.output_dir}/client_cfg.yml.0'

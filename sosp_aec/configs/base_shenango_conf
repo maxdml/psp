@@ -1,0 +1,10 @@
+host_addr 192.168.10.10
+host_netmask 255.255.255.0
+host_gateway 192.168.10.1
+runtime_kthreads 14
+runtime_guaranteed_kthreads 14
+runtime_spinning_kthreads 14
+disable_watchdog true
+runtime_priority lc
+host_mac 42:42:42:42:42:01
+static_arp 192.168.10.11 42:42:42:42:42:02
