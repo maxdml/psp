@@ -46,7 +46,6 @@ On the client machines:
 export AE_DIR=/usr/local/sosp
 git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout client; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
 ${AE_DIR}/client/sosp_aec/base_start.sh client
-mkdir /tmpfs/experiments/experiments
 ```
 
 Simple client-server tests
