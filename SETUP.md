@@ -53,6 +53,7 @@ sudo reboot
 ```
 Then:
 ```bash
+export AE_DIR=/usr/local/sosp
 ${AE_DIR}/Persephone/sosp_aec/build_shenango.sh
 ```
 
