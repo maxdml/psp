@@ -60,6 +60,7 @@ shenango-psp-fakework:
 
 shenango-rocksdb:
     start: >-
+        cd /tmp && sudo rm -rf my_db && {0.dirs.shenango}/apps/rocksdb/create_db &&
         sudo numactl -N0 -m0 {0.dirs.shenango}/apps/rocksdb/rocksdb_server {config} 6789
     stop: sudo kill {pid}
     check_rtn: -1

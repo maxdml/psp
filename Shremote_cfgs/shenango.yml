@@ -86,11 +86,6 @@ commands:
       max_duration: 30
       enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
 
-    - program: refreshdb
-      begin: 0
-      hosts: server
-      enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
-
     - program: psp_rate_client0
       hosts: client0
       config_file: '{0.files.client0_cfg.dst}'
