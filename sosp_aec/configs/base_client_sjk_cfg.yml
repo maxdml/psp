@@ -1,6 +1,6 @@
 cpus:
 - 2
-log_dir: /proj/psp-PG0/maxdml/experiments/
+log_dir: /tmpfs/experiments/
 net_workers:
 - ip: 192.168.10.11
   port: 6789

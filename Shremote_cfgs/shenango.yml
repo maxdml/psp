@@ -70,13 +70,18 @@ commands:
     - program: iokernel
       hosts: server
       begin: 0
-      max_duration: 70
+      max_duration: 40
+
+    - program: refreshdb
+      begin: 0
+      hosts: server
+      enabled: "$( True if 'ROCKSDB' in '{0.params.schedule}' else False)$"
 
     - program: shenango-app
       config: '{0.files.server_cfg.dst}'
       hosts: server
       begin: 5
-      max_duration: 60
+      max_duration: 30
 
     - program: psp_rate_client0
       hosts: client0

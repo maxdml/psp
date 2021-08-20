@@ -83,11 +83,16 @@ commands:
     - program: shinjuku
       hosts: server
       begin: 0
-      max_duration: 120
+      max_duration: 90
       cfg: '{0.files.server_cfg.dst}'
       pol: '{0.params.policy}'
       offset: '{0.params.req_offset}'
       check_rtn: -1
+
+    - program: refreshdb
+      begin: 0
+      hosts: server
+      enabled: "$( True if 'ROCKSDB' in '{0.params.schedule}' else False)$"
 
     - program: psp_rate_client0
       hosts: client0

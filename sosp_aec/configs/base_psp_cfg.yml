@@ -14,7 +14,7 @@ cpus:
 - 26
 - 28
 - 30
-log_dir: /proj/psp-PG0/maxdml/experiments/
+log_dir: /tmpfs/experiments/
 n_resas: 0
 net_workers:
 - dp: CFCFS
