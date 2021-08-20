@@ -90,6 +90,10 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
         ]
         if args.schedule == 'TPCC':
             shremote_args.extend(['--req-offset', '5'])
+        elif args.schedule == 'ROCKSDB':
+            shremote_args.extend(['--req-offset', '10'])
+        elif args.schedule == 'MB':
+            shremote_args.extend(['--req-offset', '1'])
         if args.system == 'shinjuku':
             shinjuku_args = []
             shinjuku_args.extend(['--policy', DP])
@@ -99,11 +103,11 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
                 )
             elif DP == 'cPREMQ':
                 shinjuku_args.extend(
-                    ['--n-ports', '2', '--req-offset', '1']
+                    ['--n-ports', '2']
                 )
             elif DP == 'cPRESQ':
                 shinjuku_args.extend(
-                    ['--n-ports', '1', '--req-offset', '2']
+                    ['--n-ports', '1']
                 )
             if args.schedule == 'DISP2' or args.schedule == 'SBIM2':
                 shinjuku_args.extend(['--premption-tick', '5000'])
