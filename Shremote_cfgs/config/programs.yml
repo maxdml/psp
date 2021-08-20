@@ -29,6 +29,7 @@ psp_no_sched: &PSP_NO_SCHED
         --sample {downsample}
         --collect-logs {collect_logs}
         --outdir {outdir}
+        --req-offset {req_offset}
     stop: sudo kill {pid}
     check_rtn: 0
 
@@ -46,17 +47,6 @@ shenango-app:
     start: >-
         sudo numactl -N0 -m0 {0.dirs.shenango}/apps/psp_fakework/psp_fakework {config} 6789
     stop: sudo kill {pid}
-    check_rtn: -1
-    log:
-        dir: server
-        log: server
-        out: server.out
-        err: server.err
-
-shinjuku:
-    start: >-
-        numactl -N0 -m0 /usr/local/sosp/Persephone/submodules/shinjuku/build_and_run.sh {cfg} {pol} {offset}
-    stop: sudo killall shinjuku
     check_rtn: -1
     log:
         dir: server

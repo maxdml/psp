@@ -88,12 +88,14 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
             '--schedule', f'{SCHEDULES}{args.schedule}.yml',
             '--load', str(LOAD)
         ]
+        if args.schedule == 'TPCC':
+            shremote_args.extend(['--req-offset', '5'])
         if args.system == 'shinjuku':
             shinjuku_args = []
             shinjuku_args.extend(['--policy', DP])
             if args.schedule == 'TPCC' and DP == 'cPREMQ':
                 shinjuku_args.extend(
-                    ['--n-ports', '5', '--preemption-tick', '10000', '--req-offset', '5']
+                    ['--n-ports', '5', '--preemption-tick', '10000']
                 )
             elif DP == 'cPREMQ':
                 shinjuku_args.extend(

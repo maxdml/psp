@@ -17,6 +17,7 @@ params:
     schedule: $(getarg('schedule'))$
     load: $(getarg('load', 1.0))$
     n_resas: $(getarg('n-resas', -1))$
+    req_offset: $(getarg('req-offset', 1))$
 
 programs: !include "config/programs.yml"
 
@@ -64,6 +65,7 @@ client_params: &clt_params
       srv_port: 6789
       max_clt_cc: '{0.params.max_clt_cc}'
       downsample: '{0.params.downsample}'
+      req_offset: '{0.params.req_offset}'
       begin: 10
 
 commands:

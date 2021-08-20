@@ -24,15 +24,14 @@ git apply ${AE_DIR}/Persephone/submodules/shinjuku/deps/dpdk_i40e.patch
 git apply ${AE_DIR}/Persephone/submodules/shinjuku/deps/dpdk_mk.patch
 cd ${AE_DIR}/Persephone/submodules/shinjuku
 make -sj -C deps/dpdk
+cd ${AE_DIR}/Persephone/submodules/shinjuku/deps/rocksdb
+git apply ${AE_DIR}/Persephone/submodules/shinjuku/deps/rocksdb.patch
+cd ${AE_DIR}/Persephone/submodules/shinjuku/
 make -sj -C deps/rocksdb static_lib
 make -sj -C deps/opnew
 make -j
+# Setup the RocksDB database creation utility
+make -C db create_db
 
-# TODO RocksDB
-#make -C db
-#cd db
-#rm -r my_db
-#./create_db
-#cd ../
-
-mkdir /dev/shm/experiments
+sudo mkdir /tmpfs; sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs
+mkdir /tmpfs/experiments/

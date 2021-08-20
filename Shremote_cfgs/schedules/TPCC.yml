@@ -2,5 +2,5 @@
   ratios: [.44, .44, .04, .04, .04]
   uniform: false
   ptype: PSP_MB
-  duration: 20
+  duration: 5
   rtype: [NewOrder, Payment, Delivery, OrderStatus, StockLevel]

@@ -118,15 +118,15 @@ apps = {
 policies = {
     'DFCFS': 'd-FCFS',
     'CFCFS': 'c-FCFS',
-    'shen-DFCFS': 'shen-d-FCFS',
-    'shen-CFCFS': 'shen-c-FCFS',
+    'shen-DFCFS': 'shen-DFCFS',
+    'shen-CFCFS': 'shen-CFCFS',
     'SJF': 'ARS-FP',
     'EDF': 'EDF',
 #     'CSCQ-half': 'CSCQ-half',
 #     'CSCQ': 'ARS-CS',
 #     'EDFNP': 'ARS-EDF',
-     'c-PRE-SQ': 'c-PRE-SQ',
-    'c-PRE-MQ': 'c-PRE-MQ',
+     'cPRESQ': 'cPRESQ',
+    'cPREMQ': 'cPREMQ',
     'DARC': 'DARC'
 }
 
@@ -135,8 +135,8 @@ pol_names = {
     'DARC': 'DARC',
     'c-FCFS': 'c-FCFS',
     'd-FCFS': 'd-FCFS',
-    'c-PRE-MQ': 'c-PRE',
-    'c-PRE-SQ': 'c-PRE',
+    'cPREMQ': 'c-PRE',
+    'cPRESQ': 'c-PRE',
     'ARS-FP': 'FP',
     'EDF': 'EDF',
     'shen-DFCFS': 'd-FCFS',
@@ -146,14 +146,14 @@ pol_names = {
 system_pol = {
     'DFCFS': 'Perséphone',
     'CFCFS': 'Perséphone',
-    'shen-d-FCFS': 'Shenango',
-    'shen-c-FCFS': 'Shenango',
+    'shen-DFCFS': 'Shenango',
+    'shen-CFCFS': 'Shenango',
     'SJF': 'Perséphone',
     'CSCQ-half': 'Perséphone',
     'CSCQ': 'Perséphone',
     'EDF': 'Perséphone',
-    'c-PRE-SQ': 'Shinjuku',
-    'c-PRE-MQ': 'Shinjuku',
+    'cPRESQ': 'Shinjuku',
+    'cPREMQ': 'Shinjuku',
     'DARC': 'Perséphone'
 }
 
@@ -807,7 +807,7 @@ def plot_setups_traces(exps, data_types=[], show_ts=False, pctl=1, reset_figure=
             axs[0][0].legend()
 
 alph = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
-def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, add_shen=False, **kwargs):
+def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, **kwargs):
     if close_all:
         plt.close('all')
     colors = list(mcolors.TABLEAU_COLORS.keys())[:len(policies)]
@@ -818,6 +818,11 @@ def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True,
     l = {pol: 'solid' for pol in policies.values()}
     m = {pol: marker for pol, marker in zip(policies.values(), markers)}
 
+    nrows = len(exp_files)
+    if ncols == -1:
+        ncols = len(req_types) + 1
+
+    RT
     req_types = apps[app]
     if app == 'SILO' or app == 'TPCC' or app == 'ROCKSDB':
         top = 250
@@ -827,34 +832,18 @@ def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True,
         sy = False
         left = 25
     elif app == 'MB':
+        if ncols = 2: #FIXME We specifically want overall slowdown and long request
+            req_types = ['LONG', 'SHORT']
         sy=False
         left = 0 # FIXME: input smallest offered load
-
-    nrows = len(exp_files)
-    if ncols == -1:
-        ncols = len(req_types) + 1
 
     fig, axes = plt.subplots(nrows, ncols, squeeze=False, sharey=False, sharex=False, figsize=(15,3))
     row_labels = []
     for row, exp_file in enumerate(exp_files):
         dist = distros[exp_file]
         psp_df_all, psp_df_typed = prepare_pctl_data(req_types, exp_file=exp_file, **kwargs)
-        if add_shen:
-            shen_df_all, shen_df_typed = parse_shenango_data('/home/maxdml/experiments/shenango.3', dist)
-            if not shen_df_all.empty:
-                shen_df_all.achieved /=1000
-                shen_df_all.offered /= 1000
-                shen_df_typed.achieved /=1000
-                shen_df_typed.offered /= 1000
-                # Make shenango's experiments with drops infinite latency #FIXME: not really fair because we don't tolerate anything like we do with psp
-                shen_df_typed[value] = shen_df_typed.apply(lambda x: sys.maxsize if x.achieved < x.offered else x[value], axis=1)
-                shen_df_all[value] = shen_df_all.apply(lambda x: sys.maxsize if x.achieved < x.offered else x[value], axis=1)
-
-            df = pd.concat([psp_df_all, shen_df_all]).groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
-            typed_df = pd.concat([psp_df_typed, shen_df_typed]).groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
-        else:
-            df = psp_df_all.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
-            typed_df = psp_df_typed.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+        df = psp_df_all.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
+        typed_df = psp_df_typed.groupby(['achieved', 'policy', 'type']).min().reset_index(drop=False)
 
 #         print(df[df.achieved  < df.offered][['offered', 'achieved', 'policy']])
         for pol_inter, pol in policies.items():

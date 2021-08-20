@@ -2,5 +2,5 @@
   ratios: [.44, .44, .04, .04, .04]
   uniform: false
   ptype: IX
-  duration: 10
+  duration: 5
   rtype: [NewOrder, Payment, Delivery, OrderStatus, StockLevel]
