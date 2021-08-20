@@ -14,6 +14,11 @@ Take the first NUMA node out of CFS' domain and disable kaslr
 In _/etc/default/grub_, append the following line to the entry "GRUB_CMDLINE_LINUX_DEFAULT"
 > nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
 
+Clone the repo on the server machine:
+```bash
+git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/Persephone
+```
+
 Shinjuku requires Linux 4.4.0-187 and Shenango Linux 4.15, so we will install them on the *server* machine:
 ```bash
 sudo apt install -y linux-headers-4.4.0-187-generic linux-modules-4.4.0-187-generic linux-image-4.4.0-187-generic linux-headers-4.15.0-142-generic linux-modules-4.15.0-142-generic linux-image-4.15.0-142-generic
@@ -39,9 +44,8 @@ $ uname -r
 export AE_DIR=/usr/local/sosp
 ```
 
-Clone the repo and setup Perséphone and Shinjuku on the server machine:
+Setup Perséphone and Shinjuku on the server machine:
 ```bash
-git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/Persephone
 ${AE_DIR}/Persephone/sosp_aec/base_setup.sh
 ```
 
