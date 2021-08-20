@@ -66,7 +66,7 @@ On one client:
 sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
-If you see an output similar to the one bellow, the system works as expected. You can ignore the Fdir error.
+If you see an output similar to the one below, the system works as expected. You can ignore the Fdir error.
 > 019.987:/proj/psp-PG0/maxdml/client/src/c++/apps/client/client.hh:105:~Client(): INFO: Duration: 10.00s -> Sent: 10002462, Received: 10002462, 0 sent but not answered, 1 behind schedule,  0 skipped, 170449224 events processed, 10002462 send attempts  
 >eth stats for port 0[port 0], RX-packets: 10002462 RX-dropped: 0 RX-bytes: 600147720  
 >[port 0] TX-packets: 10002462 TX-bytes: 600147720  
@@ -148,7 +148,7 @@ Then:
 
 Send a dummy ssh command to each of the node to validate their certificate.
 ```bash
-# Update USERNAME bellow
+# Update USERNAME below
 NODES=('236' '237' '229' '223' '240' '227' '244')
 for node in ${NODES[@]}; do ssh -i /root/.ssh/aec [USERNAME]@clnode${node}.clemson.cloudlab.us 'ls /home/'; done
 ```
