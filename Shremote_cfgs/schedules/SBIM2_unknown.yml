@@ -1,6 +1,0 @@
-- mean_ns: [500]
-  ratios: [1]
-  uniform: false
-  ptype: PSP_MB
-  duration: 10
-  rtype: [polpot]

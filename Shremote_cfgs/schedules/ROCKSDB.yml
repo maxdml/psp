@@ -3,4 +3,4 @@
   uniform: false
   ptype: PSP_MB
   duration: 5
-  rtype: [SHORT, LONG]
+  rtype: [GET, SCAN]

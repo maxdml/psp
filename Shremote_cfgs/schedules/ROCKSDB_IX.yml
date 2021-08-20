@@ -3,4 +3,4 @@
   uniform: false
   ptype: IX
   duration: 5
-  rtype: [SHORT, LONG]
+  rtype: [GET, SCAN]
