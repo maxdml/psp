@@ -21,6 +21,8 @@ enum class ReqType {
     DELIVERY,
     ORDER_STATUS,
     STOCK_LEVEL,
+    GET,
+    SCAN,
     LAST
 };
 
@@ -34,7 +36,9 @@ enum class ReqType {
     "Payment",
     "Delivery",
     "OrderStatus",
-    "StockLevel"
+    "StockLevel",
+    "GET",
+    "SCAN"
 };
 
 [[gnu::unused]] static enum ReqType str_to_type(std::string const &type) {
@@ -52,6 +56,14 @@ enum class ReqType {
         return ReqType::STOCK_LEVEL;
     } else if (type == "OrderStatus") {
         return ReqType::ORDER_STATUS;
+    } else if (type == "SHORT") {
+        return ReqType::SHORT;
+    } else if (type == "LONG") {
+        return ReqType::LONG;
+    } else if (type == "GET") {
+        return ReqType::GET;
+    } else if (type == "SCAN") {
+        return ReqType::SCAN;
     }
     return ReqType::UNKNOWN;
 }
