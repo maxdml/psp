@@ -379,8 +379,10 @@ def parse_hist(rtypes, exps, clients=[], dt='client-end-to-end'):
     hists['all'] = {exp: {dt: None} for exp in exps}
     for exp in exps:
         wl = exp.split('_')[2].split('.')[0]
-        tdfs = {t: {} for t in rtypes}
-        for i, clt in enumerate(clients):
+        tdfs = {t: [] for t in rtypes}
+        for clt in clients:
+#        tdfs = {t: {} for t in rtypes}
+#        for i, clt in enumerate(clients):
             exp_folder = os.path.join(exp_base_folder, exp, 'client'+str(clt), '')
             filename = os.path.join(exp_folder, 'traces_hist')
             if not Path(filename).exists():
@@ -392,34 +394,38 @@ def parse_hist(rtypes, exps, clients=[], dt='client-end-to-end'):
                     t = values.split()[0]
                     if t == 'UNKNOWN':
                         continue
-                    if i == 0:
-                        tdfs[t]['MIN'] = int(values.split()[1])
-                        tdfs[t]['MAX'] = int(values.split()[2])
-                        tdfs[t]['COUNT'] = int(values.split()[3])
-                        tdfs[t]['TOTAL'] = int(values.split()[4])
-                        tdfs[t].update(
-                            {int(k):int(v) for (k,v) in zip(header.split()[5:], values.split()[5:])}
-                        )
-                    else:
-                        if int(values.split()[1]) < tdfs[t]['MIN']:
-                            tdfs[t]['MIN'] = int(values.split()[1])
-                        if int(values.split()[2]) > tdfs[t]['MAX']:
-                            tdfs[t]['MAX'] = int(values.split()[2])
-                        tdfs[t]['COUNT'] += int(values.split()[3])
-                        tdfs[t]['TOTAL'] += int(values.split()[4])
-                        for k, v in zip(header.split()[5:], values.split()[5:]):
-                            if int(k) in tdfs[t]:
-                                tdfs[t][int(k)] += int(v)
-                            else:
-                                tdfs[t][int(k)] = int(v)
+                    tdfs[t].append(pd.DataFrame(
+                        {k:v for (k,v) in zip(header.split()[1:], values.split()[1:])},
+                        index=[0]
+                    ))
+##                    if i == 0:
+##                        tdfs[t]['MIN'] = int(values.split()[1])
+##                        tdfs[t]['MAX'] = int(values.split()[2])
+##                        tdfs[t]['COUNT'] = int(values.split()[3])
+##                        tdfs[t]['TOTAL'] = int(values.split()[4])
+##                        tdfs[t].update(
+##                            {int(k):int(v) for (k,v) in zip(header.split()[5:], values.split()[5:])}
+##                        )
+##                    else:
+##                        if int(values.split()[1]) < tdfs[t]['MIN']:
+##                            tdfs[t]['MIN'] = int(values.split()[1])
+##                        if int(values.split()[2]) > tdfs[t]['MAX']:
+##                            tdfs[t]['MAX'] = int(values.split()[2])
+##                        tdfs[t]['COUNT'] += int(values.split()[3])
+##                        tdfs[t]['TOTAL'] += int(values.split()[4])
+##                        for k, v in zip(header.split()[5:], values.split()[5:]):
+##                            if int(k) in tdfs[t]:
+##                                tdfs[t][int(k)] += int(v)
+##                            else:
+##                                tdfs[t][int(k)] = int(v)
 
         if len(clients) > len(tdfs[rtypes[0]]):
             print(f'[{exp}] Missing {len(clients) - len(tdfs[rtypes[0]])} client histogram(s)')
         # Compute percentiles for request types
         typed_hists = {}
         for t in rtypes:
-            #typed_hists[t] = merge_hists(pd.concat(tdfs[t]).fillna(0).astype('uint64'))
-            typed_hists[t] = pd.DataFrame(tdfs[t], index=[0]).astype('uint64')
+            typed_hists[t] = merge_hists(pd.concat(tdfs[t]).fillna(0).astype('uint64'))
+            #typed_hists[t] = pd.DataFrame(tdfs[t], index=[0]).astype('uint64')
             hists[t][exp][dt] = compute_pctls(typed_hists[t])
             hists[t][exp][dt]['p99_slowdown'] = hists[t][exp][dt]['p99'] / workloads[wl][t]['MEAN']
             hists[t][exp][dt]['p99.9_slowdown'] = hists[t][exp][dt]['p99.9'] / workloads[wl][t]['MEAN']
@@ -818,12 +824,11 @@ def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True,
     l = {pol: 'solid' for pol in policies.values()}
     m = {pol: marker for pol, marker in zip(policies.values(), markers)}
 
+    req_types = apps[app]
     nrows = len(exp_files)
     if ncols == -1:
         ncols = len(req_types) + 1
 
-    RT
-    req_types = apps[app]
     if app == 'SILO' or app == 'TPCC' or app == 'ROCKSDB':
         top = 250
         sy=True
@@ -832,7 +837,7 @@ def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True,
         sy = False
         left = 25
     elif app == 'MB':
-        if ncols = 2: #FIXME We specifically want overall slowdown and long request
+        if ncols == 2: #FIXME We specifically want overall slowdown and long request
             req_types = ['LONG', 'SHORT']
         sy=False
         left = 0 # FIXME: input smallest offered load

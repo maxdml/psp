@@ -6,7 +6,7 @@ Perséphone is a kernel-bypass request scheduler. It is designed to improve tail
 
 We will use cloudlab to reproduce the paper's results. Because Shinjuku requires a specific version of Linux 4.4.0, we break down the evaluation in two steps: gathering and plotting results for Shinjuku and Perséphone first, then gathering data for Shenango and updating the plots.
 
-We estimate the entire process to take X amount of time.
+We estimate the entire process to take 5 to 6 hours.
 
 Setting up Perséphone
 =====================
