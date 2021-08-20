@@ -60,19 +60,19 @@ init_cmds:
         --schedule {0.params.schedule} --load {0.params.load}
 
 client_params: &clt_params
-      max_duration: 40
+      max_duration: 45
       srv_ip: '{0.hosts.server.ip}'
       srv_port: 6789
       max_clt_cc: '{0.params.max_clt_cc}'
       downsample: '{0.params.downsample}'
       req_offset: '{0.params.req_offset}'
-      begin: 10
+      begin: 15
 
 commands:
     - program: psp_app
       config: '{0.files.server_cfg.dst}'
       host: server
-      begin: 5
+      begin: 10
       max_duration: 30
 
     - program: refreshdb
