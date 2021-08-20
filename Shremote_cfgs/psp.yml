@@ -16,7 +16,7 @@ params:
     clt_threads: $(getarg('clt-threads', '2'))$
     schedule: $(getarg('schedule'))$
     load: $(getarg('load', 1.0))$
-    n_resas: $(getarg('n-resas', 0))$
+    n_resas: $(getarg('n-resas', -1))$
 
 programs: !include "config/programs.yml"
 

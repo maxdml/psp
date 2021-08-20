@@ -87,7 +87,7 @@ commands:
       cfg: '{0.files.server_cfg.dst}'
       pol: '{0.params.policy}'
       offset: '{0.params.req_offset}'
-      check_rtn: 130
+      check_rtn: -1
 
     - program: psp_rate_client0
       hosts: client0

@@ -1,33 +1,33 @@
 server_cfg:
-    hosts: server
+    host: server
     template: '{0.dirs.shremote_cfgs}/cfg_templates/shinjuku.conf'
     src: '{0.output_dir}/shinjuku.conf'
     dst: '{0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku.conf'
 client0_cfg:
-    hosts: client0
+    host: client0
     src: '{0.output_dir}/client_cfg.yml.0'
     dst: '{host.output_dir}/client0/client_cfg.yml'
 client1_cfg:
-    hosts: client1
+    host: client1
     src: '{0.output_dir}/client_cfg.yml.1'
     dst: '{host.output_dir}/client1/client_cfg.yml'
 client2_cfg:
-    hosts: client2
+    host: client2
     src: '{0.output_dir}/client_cfg.yml.2'
     dst: '{host.output_dir}/client2/client_cfg.yml'
 client3_cfg:
-    hosts: client3
+    host: client3
     src: '{0.output_dir}/client_cfg.yml.3'
     dst: '{host.output_dir}/client3/client_cfg.yml'
 client4_cfg:
-    hosts: client4
+    host: client4
     src: '{0.output_dir}/client_cfg.yml.4'
     dst: '{host.output_dir}/client4/client_cfg.yml'
 client5_cfg:
-    hosts: client5
+    host: client5
     src: '{0.output_dir}/client_cfg.yml.5'
     dst: '{host.output_dir}/client5/client_cfg.yml'
 client_cmds_dir:
-    hosts: [client0]
+    host: [client0]
     src: '{0.output_dir}/client_cmds/'
     dst: '{host.output_dir}/client_cmds/'

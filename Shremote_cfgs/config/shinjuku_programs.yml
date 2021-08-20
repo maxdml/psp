@@ -16,7 +16,7 @@ shinjuku:
     start: >-
         sudo numactl -N0 -m0 {0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku -c {cfg} -p {pol} -o {offset} {0.dirs.base_dir}
     stop: sudo killall shinjuku
-    check_rtn: 0
+    check_rtn: -1
     log:
         dir: server
         log: server
