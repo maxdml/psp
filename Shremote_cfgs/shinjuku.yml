@@ -92,7 +92,7 @@ commands:
     - program: refreshdb
       begin: 0
       hosts: server
-      enabled: "$( True if 'ROCKSDB' in '{0.params.schedule}' else False)$"
+      enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
 
     - program: psp_rate_client0
       hosts: client0

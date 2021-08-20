@@ -72,13 +72,13 @@ commands:
     - program: psp_app
       config: '{0.files.server_cfg.dst}'
       hosts: server
-      begin: 0
+      begin: 5
       max_duration: 30
 
     - program: refreshdb
       begin: 0
       hosts: server
-      enabled: "$( True if 'ROCKSDB' in '{0.params.schedule}' else False)$"
+      enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
 
     - program: psp_rate_client0
       hosts: client0

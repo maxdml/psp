@@ -72,16 +72,24 @@ commands:
       begin: 0
       max_duration: 40
 
-    - program: refreshdb
-      begin: 0
-      hosts: server
-      enabled: "$( True if 'ROCKSDB' in '{0.params.schedule}' else False)$"
-
-    - program: shenango-app
+    - program: shenango-psp-fakework
       config: '{0.files.server_cfg.dst}'
       hosts: server
       begin: 5
       max_duration: 30
+      enabled: "$( False if '{0.params.app}' == 'ROCKSDB' else True )$"
+
+    - program: shenango-rocksdb
+      config: '{0.files.server_cfg.dst}'
+      hosts: server
+      begin: 10
+      max_duration: 30
+      enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
+
+    - program: refreshdb
+      begin: 0
+      hosts: server
+      enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
 
     - program: psp_rate_client0
       hosts: client0

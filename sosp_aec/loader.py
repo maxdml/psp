@@ -951,7 +951,8 @@ def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True,
         bbox = (1,1.15,5.5,0)
     else:
 #         bbox = (-.5,1.4,2,0.2) # all 4 workloads
-#         bbox = (0,1.2,1,0) # only slowdown
+        if ncols == 1:
+            bbox = (0,1.2,1,0) # only slowdown
         if ncols == 2:
             bbox= (0.125,1.2,2,0) # slowdown and longs
         else:
