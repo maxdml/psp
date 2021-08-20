@@ -71,52 +71,52 @@ client_params: &clt_params
 commands:
     - program: psp_app
       config: '{0.files.server_cfg.dst}'
-      hosts: server
+      host: server
       begin: 5
       max_duration: 30
 
     - program: refreshdb
       begin: 0
-      hosts: server
+      host: server
       enabled: "$( True if '{0.params.app}' == 'ROCKSDB' else False )$"
 
     - program: psp_rate_client0
-      hosts: client0
+      host: client0
       config_file: '{0.files.client0_cfg.dst}'
       outdir: 'client0'
       collect_logs: 1
       <<: *clt_params
 
     - program: psp_rate_client1
-      hosts: client1
+      host: client1
       config_file: '{0.files.client1_cfg.dst}'
       outdir: 'client1'
       collect_logs: 1
       <<: *clt_params
 
     - program: psp_rate_client2
-      hosts: client2
+      host: client2
       config_file: '{0.files.client2_cfg.dst}'
       outdir: 'client2'
       collect_logs: 1
       <<: *clt_params
 
     - program: psp_rate_client3
-      hosts: client3
+      host: client3
       config_file: '{0.files.client3_cfg.dst}'
       outdir: 'client3'
       collect_logs: 1
       <<: *clt_params
 
     - program: psp_rate_client4
-      hosts: client4
+      host: client4
       config_file: '{0.files.client4_cfg.dst}'
       outdir: 'client4'
       collect_logs: 1
       <<: *clt_params
 
     - program: psp_rate_client5
-      hosts: client5
+      host: client5
       config_file: '{0.files.client5_cfg.dst}'
       outdir: 'client5'
       collect_logs: 1
