@@ -1,4 +1,4 @@
-- mean_ns: [1000, 100000]
+- mean_ns: [1500, 635000]
   ratios: [.5, .5]
   uniform: false
   ptype: IX

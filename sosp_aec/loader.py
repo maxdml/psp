@@ -88,11 +88,11 @@ workloads = {
     'ROCKSDB': {
         'avg_s': 526,
         'name': 'ROCKSDB',
-        'max_load': 26616,
+        'max_load': 45000,
         'distribution': 'bimodal-50.0:0.0-50.0:0.0',
         'GET': { 'MEAN': 2.0, 'RATIO': .5, 'YLIM': 300 },
         'SCAN': { 'MEAN': 1050.0, 'RATIO': .5, 'YLIM': 1000 },
-        'UNKNOWN': { 'MEAN': 526, 'RATIO': 1, 'YLIM': 1000 }
+        'UNKNOWN': { 'MEAN': 526, 'RATIO': 1, 'YLIM': 200 }
     },
     'TPCC': {
         'avg_s': 19,
