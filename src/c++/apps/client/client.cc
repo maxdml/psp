@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
         ("mb-reqs", po::bool_switch(&mb_reqs), "Generate microbenchmark requests with PSP protocol")
         ("ix-reqs", po::bool_switch(&ix_reqs), "Generate microbenchmark requests with IX protocol")
         ("pkt-size", po::value<uint64_t>(&pkt_size), "Fill packets with X bytes")
+        ("req-offset", po::value<uint16_t>(&req_offset), "offset for requests ID")
         ("ip,I", po::value<std::vector<std::string>>(&remote_hosts)->multitoken()->required(), "server IPs")
         ("port,P", po::value<std::vector<uint16_t>>(&remote_ports)->multitoken()->required(), "server's port")
         ("duration,d", po::value<uint64_t>(&duration)->default_value(10), "running duration")

@@ -5,8 +5,7 @@
 #include "msg.hh"
 #include <random>
 
-#define BASE_REQ_IDX 1
-//#define BASE_REQ_IDX 5
+uint16_t req_offset = 1;
 
 enum class pkt_type {
     PSP_MB = 0,
@@ -84,7 +83,7 @@ class Schedule {
                 }
             }
             likely((cmd_idx >= 0)) ? (void)0 : abort();
-            type_counts[BASE_REQ_IDX + cmd_idx]++;
+            type_counts[req_offset + cmd_idx]++;
 
             //Pick interval
             if (uniform) {
@@ -102,7 +101,7 @@ class Schedule {
             requests.push_back(cr);
             PSP_TRUE(EINVAL, requests[rid] == cr);
             cr->id = rid;
-            cr->type = static_cast<ReqType>(BASE_REQ_IDX + cmd_idx);
+            cr->type = static_cast<ReqType>(req_offset + cmd_idx);
             cr->mbuf = nullptr; // filled at send time
             switch (ptype) {
                 case pkt_type::PSP_MB:
