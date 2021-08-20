@@ -33,5 +33,6 @@ make -j
 # Setup the RocksDB database creation utility
 make -C db create_db
 
-sudo mkdir /tmpfs; sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs
-mkdir /tmpfs/experiments/
+sudo mkdir -p /tmpfs
+mountpoint -q /tmpfs || sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs
+mkdir -p /tmpfs/experiments/

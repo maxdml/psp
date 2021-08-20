@@ -70,3 +70,7 @@ if [[ "$SYS_NAME" == "shinjuku" ]]; then
     sudo insmod ${AE_DIR}/Persephone/submodules/shinjuku/deps/dune/kern/dune.ko
     sudo insmod ${AE_DIR}/Persephone/submodules/shinjuku/deps/pcidma/pcidma.ko
 fi
+
+sudo mkdir -p /tmpfs
+mountpoint -q /tmpfs || sudo mount -t tmpfs -o size=50G,mode=1777 tmpfs /tmpfs
+mkdir -p /tmpfs/experiments/
