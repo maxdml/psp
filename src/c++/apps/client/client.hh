@@ -368,6 +368,10 @@ class Client : public Worker {
                 // Store values in nanoseconds
                 insert_value(&hist, (pruned_requests[i]->completed - pruned_requests[i]->sending) / FREQ);
             }
+            if (hist.count == 0) {
+                PSP_WARN("No values inserted in histogram");
+                return -1;
+            }
             // First line is histo for all samples
             hist_output << "TYPE\tMIN\tMAX\tCOUNT\tTOTAL";
             for (uint64_t i = 0; i < hist.buckets.size(); ++i) {
@@ -408,6 +412,13 @@ class Client : public Worker {
                     // Store values in nanoseconds
                     insert_value(&hist, (reqs[i]->completed - reqs[i]->sending) / FREQ);
                 }
+		if (hist.count == 0) {
+		    PSP_WARN(
+			"No values inserted in histogram for type "
+                        << req_type_str[static_cast<int>(rtype.first)]
+		    );
+                    continue;
+		}
                 hist_output << "TYPE\tMIN\tMAX\tCOUNT\tTOTAL";
                 for (uint64_t i = 0; i < hist.buckets.size(); ++i) {
                     if (hist.buckets[i] > 0) {
