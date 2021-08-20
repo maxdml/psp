@@ -38,6 +38,7 @@ sudo reboot
 ```
 Then:
 ```bash
+export AE_DIR=/usr/local/sosp
 ${AE_DIR}/Persephone/sosp_aec/build_shenango.sh
 ```
 
@@ -54,7 +55,7 @@ Simple client-server tests
 We will now make sure that all three systems work (Perséphone, Shinjuku, Shenango).
 
 ### Perséphone
-On the server:
+On the server On the server (reboot on 4.4.0-187-generic if needed):
 ```bash
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh Persephone
 cd ${AE_DIR}/Persephone/build/src/c++/apps/app/
@@ -85,7 +86,7 @@ If you see an output similar to the one below, the system works as expected. You
 >Port 0: _______ rx_flow_director_sb_match_packets:		4294967275  
 
 ### Shinjuku
-On the server (reboot on 4.4.0-187 if needed)
+On the server (reboot on 4.4.0-187-generic if needed)
 ```bash
 # We use base_start.sh to unbind the NIC from igb_uio
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh shinjuku
@@ -102,7 +103,7 @@ sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config
 You should have a similar ouput than for Perséphone if this test worked correctly.
 
 ### Shenango
-On one server terminal (reboot on 4.15.0-142 if needed)
+On one server terminal (reboot on 4.15.0-142-generic if needed)
 ```bash
 ${AE_DIR}/client/sosp_aec/base_start.sh Shenango
 sudo ${AE_DIR}/Persephone/submodules/shenango/iokerneld ias 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 noht
