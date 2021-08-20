@@ -648,46 +648,6 @@ def prepare_pctl_data(rtypes, exps=[], exp_file=None, app="REST", dt='client-end
 
     return df, typed_df
 
-#FIXME: the typed slowdown for rocksdb and tpcc are gonna be wrong (but we don't use them)
-def parse_shenango_data(filepath, workload):
-    cols_rename = {
-        'mode' : 'policy',
-        'p999' : 'p99.9',
-        'p50': 'median'
-    }
-    cols = list(cols_rename.values()) + ['offered', 'achieved', 'type', 'p99', 'request_us', 'p99_slowdown', 'p99.9_slowdown']
-    shenango_df = pd.read_csv(filepath).rename(columns=cols_rename)
-    request_params = workloads[workload]
-    #https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
-    pd.options.mode.chained_assignment = None  # default='warn'
-    df = shenango_df[shenango_df.distribution == request_params['distribution']].reset_index(drop=True)
-    if df.empty:
-        return pd.DataFrame(), pd.DataFrame()
-    df['policy'] = df.apply(lambda x: 'shen-c-FCFS' if x.policy == 'cFCFS' else 'shen-d-FCFS', axis=1)
-    overall_df = df[df.request_us == "ALL"].reset_index(drop=True)
-    overall_df['type'] = 'UNKNOWN'
-    slowdown_df = df[df.request_us == "slowdowns"][['p99', 'p99.9']].reset_index(drop=True)
-    overall_df['p99_slowdown'] = slowdown_df['p99']
-    overall_df['p99.9_slowdown'] = slowdown_df['p99.9']
-    if request_params['distribution'] == 'tpcc':
-        typed_df = df[~df.request_us.isin(['ALL', 'slowdowns'])].reset_index(drop=True)
-        typed_df['type'] = typed_df.apply(lambda x: x.request_us, axis=1)
-        typed_df['p99_slowdown'] = typed_df.apply(lambda x: x['p99'] / request_params[x.request_us]['MEAN'], axis=1)
-        typed_df['p99.9_slowdown'] = typed_df.apply(lambda x: x['p99.9'] / request_params[x.request_us]['MEAN'], axis=1)
-    elif workload == 'ROCKSDB':
-        typed_df = df[~df.request_us.isin(['ALL', 'slowdowns'])].reset_index(drop=True)
-        typed_df['type'] = typed_df.request_us
-        typed_df['p99_slowdown'] = typed_df.apply(lambda x: x['p99'] / request_params[x.request_us]['MEAN'], axis=1)
-        typed_df['p99.9_slowdown'] = typed_df.apply(lambda x: x['p99.9'] / request_params[x.request_us]['MEAN'], axis=1)
-    else:
-        typed_df = df[~df.request_us.isin(['ALL', 'slowdowns'])].reset_index(drop=True).astype({'request_us': 'float'})
-        typed_df['type'] = typed_df.apply(lambda x: 'SHORT' if x.request_us == request_params['SHORT']['MEAN'] else 'LONG', axis=1)
-        # Recompte typed slowdown
-        typed_df['p99_slowdown'] = typed_df.apply(lambda x: x['p99'] / request_params['SHORT']['MEAN'] if x.request_us == request_params['SHORT']['MEAN'] else x['p99'] / request_params['LONG']['MEAN'], axis=1)
-        typed_df['p99.9_slowdown'] = typed_df.apply(lambda x: x['p99.9'] / request_params['SHORT']['MEAN'] if x.request_us == request_params['SHORT']['MEAN'] else x['p99'] / request_params['LONG']['MEAN'], axis=1)
-
-    return overall_df[cols], typed_df[cols]
-
 def gen_wl_dsc(workload, req_names=None):
     # The schedule file itself should have a dict rather than lists
     wl_dict = {}
