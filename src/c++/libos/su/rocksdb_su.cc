@@ -35,7 +35,7 @@ int RdbWorker::process_request(unsigned long payload) {
                 size_t klen;
                 const char * retr_key = rocksdb_iter_key(iter, &klen);
                 rocksdb_iter_next(iter);
-                if (*reinterpret_cast<uint32_t *>(type_addr) == 1)
+                if (*reinterpret_cast<uint32_t *>(type_addr) == 10)
                     break;
             }
             rocksdb_iter_destroy(iter);
@@ -65,10 +65,10 @@ int RdbWorker::process_request(unsigned long payload) {
 */
     uint32_t type = *reinterpret_cast<uint32_t *>(type_addr);
     switch(static_cast<ReqType>(type)) {
-        case ReqType::SHORT:
+        case ReqType::GET:
             n_gets++;
             break;
-        case ReqType::LONG:
+        case ReqType::SCAN:
             n_scans++;
             break;
         default:
