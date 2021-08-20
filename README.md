@@ -16,10 +16,9 @@ Creating the cloudlab experiment
 We will use Clemson's c6420 machines, so make sure that some are [available](https://www.cloudlab.us/resinfo.php).
 
 - [Login to Cloudlab](https://www.cloudlab.us/login.php).
-- [Create a new experiment profile](https://www.cloudlab.us/manage_profile.php).
-- Upload [this profile](sosp_aec/cloudlab.py)
+- Instantiate an experiment with our [cloudlab profile](https://www.cloudlab.us/p/Psp/sospAEC).
 
-Now, instantiate a new experiment using the profile. You should be able to login using your cloudlab credentials.
+You should be able to login using your cloudlab credentials.
 
 Building the systems
 ---------------------------------
