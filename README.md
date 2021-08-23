@@ -88,7 +88,7 @@ On the server (reboot on 4.4.0-187-generic if needed)
 ```bash
 # We use base_start.sh to unbind the NIC from igb_uio
 ${AE_DIR}/Persephone/sosp_aec/base_start.sh shinjuku
-sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/shinjuku -c ${AE_DIR}/Persephone/sosp_aec/configs/base_shinjuku_conf
+sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/dp/shinjuku -c ${AE_DIR}/Persephone/sosp_aec/configs/base_shinjuku_conf
 ```
 
 On the client update the server's NIC MAC address in the config file.
