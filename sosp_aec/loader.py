@@ -1030,8 +1030,6 @@ def plot_agg_p99_over_time(exps, app='MB', debug=False, **kwargs):
     msizes = {'c-FCFS': 4, "DARC": 7}
     for exp in exps:
         pol = policies[exp.split('_')[0]]
-        if pol == 'DARC':
-            pol = 'DARC'
         for rtype in req_types:
             name = req_names[rtype] + '_' + pol if len(exps) > 1 else req_names[rtype]
             style[name] = {}
@@ -1051,8 +1049,6 @@ def plot_agg_p99_over_time(exps, app='MB', debug=False, **kwargs):
     max_y = 0
     for e, exp in enumerate(exps):
         pol = policies[exp.split('_')[0]]
-        if pol == 'DARC':
-            pol = 'DARC'
         df, throughput_df, schedule, alloc = setups[exp]['bins'], setups[exp]['tp'], setups[exp]['schedule'], setups[exp]['alloc']
         for i, req_type in enumerate(req_types):
             typed_lat_df = df[df.REQ_TYPE == req_type]
@@ -1067,7 +1063,7 @@ def plot_agg_p99_over_time(exps, app='MB', debug=False, **kwargs):
             lat_df.VALUE /= 1000
             if max(lat_df.VALUE) > max_y:
                 max_y = max(lat_df.VALUE) + max(lat_df.VALUE)*.05
-            axes[0][0].hlines(y=total_p999, xmin=0, xmax=max(lat_df.index/1e1), linestyles=':', color=c[req_type], label=req_names[req_type] +'_p999')
+            #axes[0][0].hlines(y=total_p999, xmin=0, xmax=max(lat_df.index/1e1), linestyles=':', color=c[req_type], label=req_names[req_type] +'_p999')
     #         axes[0][0].hlines(y=total_p99, xmin=0, xmax=max(lat_df.index/1e1), linestyles='-.', color=c[req_type], label=req_names[req_type] +'_p99')
     #         axes[0][0].hlines(y=total_p90, xmin=0, xmax=max(lat_df.index/1e1), linestyles='--', color=c[req_type], label=req_names[req_type] +'_p90')
     #         axes[0][0].hlines(y=total_p50, xmin=0, xmax=max(lat_df.index/1e1), linestyles='-', color=c[req_type], label=req_names[req_type] +'_p50')
@@ -1118,7 +1114,7 @@ def plot_agg_p99_over_time(exps, app='MB', debug=False, **kwargs):
 #         offset += workload['duration']
         start = start_times[w] / 1e9
         end = end_times[w] / 1e9
-        print(f'filling between {start} and {end}')
+        print(f'filling between {start:.3f} and {end:.3f}')
         for n in range(nrows):
             axes[n][0].axvspan(start, end, alpha=.1, color=list(mcolors.TABLEAU_COLORS.keys())[w%2])# color=colors[w%2])
             axes[n][0].axvline(x=start, linewidth=1, color='black', dashes=(5, 2, 1, 2))
