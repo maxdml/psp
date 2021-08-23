@@ -35,7 +35,7 @@ psp_no_sched: &PSP_NO_SCHED
 
 shinjuku:
     start: >-
-        sudo numactl -N0 -m0 {0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku -c {cfg} -p {pol} -o {req_offset} -w {workload}
+        sudo numactl -N0 -m0 {0.dirs.base_dir}/Persephone/submodules/shinjuku/dp/shinjuku -c {cfg} -p {pol} -o {req_offset} -w {workload}
     stop: sudo killall shinjuku
     check_rtn: -1
     log:
