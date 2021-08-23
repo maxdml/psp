@@ -33,6 +33,17 @@ psp_no_sched: &PSP_NO_SCHED
     stop: sudo kill {pid}
     check_rtn: 0
 
+shinjuku:
+    start: >-
+        sudo numactl -N0 -m0 {0.dirs.base_dir}/Persephone/submodules/shinjuku/shinjuku -c {cfg} -p {pol} -o {req_offset} -w {workload}
+    stop: sudo killall shinjuku
+    check_rtn: -1
+    log:
+        dir: server
+        log: server
+        out: server.out
+        err: server.err
+
 refreshdb:
     start: >-
         cd /tmp && sudo rm -rf my_db && {0.dirs.base_dir}/Persephone/submodules/shinjuku/db/create_db

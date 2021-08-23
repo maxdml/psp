@@ -77,6 +77,7 @@ client_params: &clt_params
       srv_port: 6789
       max_clt_cc: '{0.params.max_clt_cc}'
       downsample: '{0.params.downsample}'
+      req_offset: '{0.params.req_offset}'
       begin: 40
 
 commands:
@@ -86,7 +87,8 @@ commands:
       max_duration: 90
       cfg: '{0.files.server_cfg.dst}'
       pol: '{0.params.policy}'
-      offset: '{0.params.req_offset}'
+      req_offset: '{0.params.req_offset}'
+      workload: '{0.params.app}'
       check_rtn: -1
 
     - program: refreshdb

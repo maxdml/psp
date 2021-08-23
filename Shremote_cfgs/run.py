@@ -90,14 +90,14 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
         ]
         if args.schedule == 'TPCC':
             shremote_args.extend(['--req-offset', '5'])
-        elif args.schedule == 'ROCKSDB':
+        elif args.schedule == 'ROCKSDB' or args.schedule == 'ROCKSDB_IX':
             shremote_args.extend(['--req-offset', '10'])
         elif args.schedule == 'MB':
             shremote_args.extend(['--req-offset', '1'])
         if args.system == 'shinjuku':
             shinjuku_args = []
             shinjuku_args.extend(['--policy', DP])
-            if args.schedule == 'TPCC' and DP == 'cPREMQ':
+            if args.schedule == 'TPCC_IX' and DP == 'cPREMQ':
                 shinjuku_args.extend(
                     ['--n-ports', '5', '--preemption-tick', '10000']
                 )
@@ -109,9 +109,9 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
                 shinjuku_args.extend(
                     ['--n-ports', '1']
                 )
-            if args.schedule == 'DISP2' or args.schedule == 'SBIM2':
+            if args.schedule == 'DISP2_IX' or args.schedule == 'SBIM2_IX':
                 shinjuku_args.extend(['--premption-tick', '5000'])
-            elif args.schedule == 'ROCKSDB':
+            elif args.schedule == 'ROCKSDB_IX':
                 shinjuku_args.extend(['--premption-tick', '15000'])
             shremote_args.extend(shinjuku_args)
         elif args.system == 'shenango':
