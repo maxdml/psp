@@ -18,7 +18,6 @@ log_dir: {0.dirs.log_dir}
 
 params:
     n_ports: $(getarg('n-ports', 2))$
-    n_clients: $(getarg('n-clients', 1))$
     downsample: $(getarg('downsample', 0))$
     srv_dispatch_pol: $(getarg('srv-dp', 'DFCFS'))$
     clt_cpus: $(getarg('clt-cpus', '5'))$

@@ -15,9 +15,6 @@
 /psp/experiments/shen-CFCFS_0.80_DISP2_14.0
 /psp/experiments/shen-CFCFS_0.85_DISP2_14.0
 /psp/experiments/shen-CFCFS_0.90_DISP2_14.0
-/psp/experiments/shen-CFCFS_0.95_DISP2_14.0
-/psp/experiments/shen-CFCFS_1.00_DISP2_14.0
-/psp/experiments/shen-CFCFS_1.05_DISP2_14.0
 /psp/experiments/DARC_0.05_DISP2_14.0
 /psp/experiments/DARC_0.10_DISP2_14.0
 /psp/experiments/DARC_0.15_DISP2_14.0
@@ -38,7 +35,6 @@
 /psp/experiments/DARC_0.90_DISP2_14.0
 /psp/experiments/DARC_0.95_DISP2_14.0
 /psp/experiments/DARC_1.00_DISP2_14.0
-/psp/experiments/DARC_1.05_DISP2_14.0
 /psp/experiments/cPREMQ_0.05_DISP2_IX_14.0
 /psp/experiments/cPREMQ_0.10_DISP2_IX_14.0
 /psp/experiments/cPREMQ_0.15_DISP2_IX_14.0
@@ -53,4 +49,4 @@
 /psp/experiments/cPREMQ_0.60_DISP2_IX_14.0
 /psp/experiments/cPREMQ_0.65_DISP2_IX_14.0
 /psp/experiments/cPREMQ_0.70_DISP2_IX_14.0
-/psp/experiments/cPREMQ_0.75_DISP2_IX_14.0
+/psp/experiments/cPREMQ_0.80_DISP2_IX_14.0
