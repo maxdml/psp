@@ -773,7 +773,7 @@ def plot_setups_traces(exps, data_types=[], show_ts=False, pctl=1, reset_figure=
             axs[0][0].legend()
 
 alph = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
-def plot_p99s(exp_files, app="REST", value='p99', use_ylim=True, close_all=True, ncols=2, **kwargs):
+def plot_p99s(exp_files, app="MB", value='p99', use_ylim=True, close_all=True, ncols=2, **kwargs):
     if close_all:
         plt.close('all')
     colors = list(mcolors.TABLEAU_COLORS.keys())[:len(policies)]
