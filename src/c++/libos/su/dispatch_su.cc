@@ -239,7 +239,7 @@ int Dispatcher::enqueue(unsigned long req, uint64_t cur_tsc) {
         uint32_t type = *rte_pktmbuf_mtod_offset(
             static_cast<rte_mbuf *>((void*)req), char *, NET_HDR_SIZE + sizeof(uint32_t)
         );
-        if (unlikely(type == 0 or type > 9))
+        if (unlikely(type == 0 or type > static_cast<int>(ReqType::LAST)))
             // Push to UNKNOWN queue
             return push_to_rqueue(req, rtypes[n_rtypes], cur_tsc);
         return push_to_rqueue(req, rtypes[type_to_nsorder[type]], cur_tsc);

@@ -116,10 +116,6 @@ Psp::Psp(std::string &app_cfg, std::string l) {
             PSP_WARN("No worker registered?");
         }
 
-        // Set spillway core (last core)
-        dpt.spillway = dpt.n_workers - 1;
-        PSP_INFO("Setting spillway core on " << dpt.spillway);
-
         // Register request types
         std::map<uint64_t, RequestType *> rtypes;
         if (config["requests"].IsDefined()) {
@@ -143,6 +139,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     rtypes[mean_ns] = rtype;
                 } else {
                     //FIXME i/n_types is probably 0 but whatever
+                    // Beware, rtypes will not be sorted by service time order
                     RequestType *rtype = new RequestType(str_to_type(req_type), i+1, 0, i/n_types);
                     rtypes[i] = rtype;
                 }
@@ -165,6 +162,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
             if (dpt.dp != Dispatcher::dispatch_mode::DARC) {
                 dpt.first_resa_done = true;
             } else {
+                // Set spillway core (last core)
+                dpt.spillway = dpt.n_workers - 1;
+                PSP_INFO("Setting spillway core on " << dpt.spillway);
+
                 /* We first start in cFCFS */
                 dpt.dp = Dispatcher::dispatch_mode::CFCFS;
                 dpt.first_resa_done = false;
@@ -197,23 +198,26 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     dpt.dynamic = false;
                     uint32_t n_resas = config["n_resas"].as<uint32_t>();
 
+                    memset(dpt.groups, '\0', 2 * sizeof(TypeGroups));
+                    dpt.n_groups = 2; // Should be useless
+
+                    // FIXME we rely on requests having been given in ascending runtime order here..
                     RequestType *shorts = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::SHORT)]];
                     shorts->type_group = 0;
                     RequestType *longs = dpt.rtypes[dpt.type_to_nsorder[static_cast<int>(ReqType::LONG)]];
                     longs->type_group = 1;
 
                     PSP_INFO("Manually tuning DARC with " << n_resas << " cores for short requests")
+                    dpt.groups[0].n_resas = 0;
                     for (unsigned int i = 0; i < n_resas; ++i) {
-                        dpt.groups[0].res_peers[i] = i;
+                        dpt.groups[0].res_peers[dpt.groups[0].n_resas++] = i;
                     }
-                    dpt.groups[0].n_resas = n_resas;
-                    PSP_INFO("Shorts can steal: " << n_resas << " to " << dpt.n_workers-1);
                     dpt.groups[0].n_stealable = 0;
                     for (unsigned int i = n_resas; i < dpt.n_workers; ++i) {
                         dpt.groups[0].stealable_peers[dpt.groups[0].n_stealable++] = i;
                     }
 
-                    PSP_INFO("Longs reservation: " << n_resas << " to " << cpus.size()-2);
+                    PSP_INFO("Longs reservation: " << n_resas << " to " << dpt.n_workers - 1);
                     dpt.groups[1].n_resas = 0;
                     for (unsigned int i = n_resas; i < dpt.n_workers; ++i) {
                         dpt.groups[1].res_peers[dpt.groups[1].n_resas++] = i;
@@ -223,6 +227,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                     for (unsigned int i = 0; i < dpt.groups[0].n_resas; ++i) {
                         PSP_INFO("Worker " << dpt.groups[0].res_peers[i] << " reserved to shorts");
                     }
+                    PSP_INFO(
+                        "Shorts can steal: " << n_resas << " to " << dpt.n_workers - 1
+                        << " (" << dpt.groups[0].n_stealable << ")"
+                    );
                     for (unsigned int i = 0; i < dpt.groups[1].n_resas; ++i) {
                         PSP_INFO("Worker " << dpt.groups[1].res_peers[i] << " reserved to longs");
                     }
