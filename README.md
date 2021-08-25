@@ -4,9 +4,11 @@ Perséphone
 This repository hosts our artifact for the SOSP'21 Artifact Evaluation Committee.
 Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. We evaluate Perséphone against two competing systems, [Shenango](https://www.usenix.org/conference/nsdi19/presentation/ousterhout) and [Shinjuku](https://www.usenix.org/conference/nsdi19/presentation/kaffes).
 
-We will use cloudlab to reproduce the paper's results. Because Shinjuku requires a specific version of Linux 4.4.0, we break down the evaluation in two steps: gathering and plotting results for Shinjuku and Perséphone first, then gathering data for Shenango and updating the plots.
+We will use cloudlab to reproduce the paper's results and provide a pre-built image. You can look at [these instructions](BUILD_IMAGE.md) to setup your own machines.
 
 We estimate the entire process to take 5 to 6 hours.
+
+Please reach out with any question. We set up an IRC channel on QuakeNet, #psp, and will be monitoring this channel 9 a.m to 6 p.m Pacific and Eastern times.
 
 Setting up Perséphone
 =====================
