@@ -340,7 +340,7 @@ def merge_hists(df):
     base_cols['TOTAL'] = df['TOTAL'].sum()
 
     # This is stupid
-    buckets = sorted(df.drop(['MIN', 'MAX', 'COUNT', 'TOTAL'], axis=1).columns)
+    buckets = list(map(str,sorted(list(map(int, df.drop(['MIN', 'MAX', 'COUNT', 'TOTAL'], axis=1).columns)))))
     return pd.DataFrame({**base_cols, **dict(df[buckets].sum())}, index=[0])
 
 def compute_pctls(hist):
