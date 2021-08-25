@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import yaml
 from argparse import ArgumentParser
+from collections import OrderedDict
 
 parser = ArgumentParser()
 parser.add_argument('output')
@@ -55,7 +56,7 @@ if args.schedule:
         workloads = yaml.load(f, Loader=yaml.FullLoader)
     for workload in workloads:
         types.extend(workload['rtype'])
-    unique_types = list(set(types))
+    unique_types = list(OrderedDict.fromkeys(types))
     config['requests'] = [{'type': r} for r in unique_types]
 elif args.req_type is not None:
     req_types = []
