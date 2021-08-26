@@ -98,9 +98,9 @@ class Client : public Worker {
                 " %u sent but not answered, %u behind schedule, "
                 " %u skipped, %u events processed, %u send attempts",
                 ns_diff(s->start_time, s->end_time) / 1e9,
-                s->send_index, s->recv_requests,
-                s->send_index - s->recv_requests,
-                s->n_requests - s->send_index - 1,
+                s->send_index + 1, s->recv_requests,
+                (s->send_index + 1) - s->recv_requests,
+                s->n_requests - (s->send_index + 1),
                 s->n_skipped, s->ev_count, s->attempts
             );
         }
