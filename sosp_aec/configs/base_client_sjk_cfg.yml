@@ -1,6 +1,6 @@
 cpus:
 - 2
-log_dir: /proj/psp-PG0/maxdml/experiments/
+log_dir: /tmpfs/experiments/
 net_workers:
 - ip: 192.168.10.11
   port: 6789
@@ -16,7 +16,7 @@ network:
   - -w
   - '0000:18:00.1'
   mac: '42:42:42:42:42:02'
-  remote_mac: '42:42:42:42:42:01'
+  remote_mac: '3c:fd:fe:55:28:ba'
 schedules:
 - cmd_mean_ns:
   - 1000
