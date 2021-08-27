@@ -29,7 +29,7 @@ params:
     load: $(getarg('load', 1.0))$
     preemption_tick: $(getarg('preemption-tick', 5000))$
     policy: $(getarg('policy', 'cPRESQ'))$
-    req_offset: $(getarg('req_offset', 1))$
+    req_offset: $(getarg('req-offset', 1))$
 
 programs: !include "config/programs.yml"
 

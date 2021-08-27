@@ -88,7 +88,7 @@ for LOAD in np.arange(args.load_range[0], args.load_range[1], .05):
             '--schedule', f'{SCHEDULES}{args.schedule}.yml',
             '--load', str(LOAD)
         ]
-        if args.schedule == 'TPCC':
+        if args.schedule == 'TPCC' or args.schedule == 'TPCC_IX':
             shremote_args.extend(['--req-offset', '5'])
         elif args.schedule == 'ROCKSDB' or args.schedule == 'ROCKSDB_IX':
             shremote_args.extend(['--req-offset', '10'])
