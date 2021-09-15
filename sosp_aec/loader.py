@@ -285,7 +285,7 @@ def prepare_traces(exps, data_types=list(trace_label_to_dtype), reset_time=True,
             if os.path.exists(alloc_file):
                 with open(alloc_file, 'r') as f:
                     types = {
-                        'ID': 'uint32', 'START': 'uint64', 'END': 'uint64',
+                        'ID': 'uint32', 'START': 'float64', 'END': 'floatt64',
                         'GID': 'uint32', 'RES': 'uint32', 'STEAL': 'uint32',
                         'COUNT': 'uint32', 'UPDATED': 'uint32', 'QLEN': 'uint32'
                     }
