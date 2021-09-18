@@ -50,8 +50,9 @@ int MbWorker::process_request(unsigned long payload) {
     }
     n_requests++;
 
-    // Hack response to include completion timestamp
+    // Set response size
     *reinterpret_cast<uint32_t *> (req_addr) = 0;
+    static_cast<rte_mbuf *>((void*)payload)->l4_len = sizeof(uint32_t) * 3; // request ID + resquest type + response size
     return 0;
 }
 

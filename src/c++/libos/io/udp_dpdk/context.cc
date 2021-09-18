@@ -42,7 +42,7 @@ int UdpContext::send_packets() {
     if (likely(nb_pkts > 0)) {
         size_t count = ::rte_eth_tx_burst(port_id, id, pkts, nb_pkts);
         if (unlikely(count < nb_pkts)) {
-            PSP_WARN( "ho noes I have to handle this");
+            PSP_ERROR(" Sent " << count << " / " << nb_pkts);
             return EAGAIN;
         }
     }
@@ -55,10 +55,10 @@ T* pktmbuf_struct_read(const rte_mbuf *pkt, size_t offset, T& buf) {
 }
 
 int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) {
-	rte_mbuf *pkt = static_cast<rte_mbuf *>((void *)mbuf);
-	PSP_NOTNULL(ENOMEM, pkt);
+    rte_mbuf *pkt = static_cast<rte_mbuf *>((void *)mbuf);
+    PSP_NOTNULL(ENOMEM, pkt);
 
-	size_t hdr_offset = 0;
+    size_t hdr_offset = 0;
     char *pkt_start = rte_pktmbuf_mtod(pkt, char*);
 
     auto *eth_hdr = rte_pktmbuf_mtod_offset(pkt, rte_ether_hdr *, hdr_offset);
@@ -68,13 +68,12 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     auto *udp_hdr = rte_pktmbuf_mtod_offset(pkt, rte_udp_hdr *, hdr_offset);
     hdr_offset += sizeof(*udp_hdr);
     char *data_start = rte_pktmbuf_mtod_offset(pkt, char *, hdr_offset);
-    char *data_offset = data_start + sizeof(uint32_t) * 3; // request ID + resquest type + response size
+    char *data_offset = data_start + pkt->l4_len; // XXX dirty trick
     data_offset += *(uint32_t *)data_offset; // payload size
     size_t data_len = (data_offset - data_start);
     size_t total_len = (data_offset - pkt_start);
 
     // Use our local port as source
-    udp_hdr->dst_port = udp_hdr->src_port;
     udp_hdr->src_port = htons(port);
     uint16_t udp_len = static_cast<uint16_t>(data_len + sizeof(*udp_hdr));
     udp_hdr->dgram_len = htons(udp_len);
@@ -86,7 +85,6 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
     ip_hdr->time_to_live = IP_DEFTTL;
     ip_hdr->next_proto_id = IPPROTO_UDP;
 
-    ip_hdr->dst_addr = ip_hdr->src_addr;
     ip_hdr->src_addr = ip.s_addr;
     pkt->ol_flags = 0x0;
 #ifdef OFFLOAD_IP_CKSUM
@@ -94,7 +92,17 @@ int UdpContext::prepare_outbound_packet(unsigned long mbuf, rte_mbuf **pkt_out) 
 #endif
     pkt->l3_len = sizeof(*ip_hdr);
 
-    eth_hdr->d_addr = eth_hdr->s_addr;
+    //FIXME: if we are a server, remote_mac is zero and we can swap IP addr and UDP ports.
+    if (rte_is_zero_ether_addr(&remote_mac)) {
+        eth_hdr->d_addr = eth_hdr->s_addr;
+        udp_hdr->dst_port = udp_hdr->src_port;
+        ip_hdr->dst_addr = ip_hdr->src_addr;
+    } else {
+        assert(not rte_is_zero_ether_addr(&remote_mac));
+        eth_hdr->d_addr = remote_mac;
+        udp_hdr->dst_port = remote_port;
+        ip_hdr->dst_addr = remote_ip.s_addr;
+    }
     eth_hdr->s_addr = my_mac;
     eth_hdr->ether_type = htons(RTE_ETHER_TYPE_IPV4);
     pkt->l2_len = sizeof(*eth_hdr);
@@ -256,16 +264,33 @@ int UdpContext::set_fdir() {
     struct rte_flow_error error;
 
     /* Generate an ingress rule for the context's rx queue */
-    PSP_INFO("Attempting to register new ingress rule on rxq " << id);
-    PSP_INFO(
-        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) <<
-        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << " -> rxq " <<  id
+    PSP_DEBUG("Attempting to register new ingress rule on rxq " << id);
+    PSP_DEBUG(
+        "SRC " << inet_ntoa(saddr) << "/" << unsigned(src_mask_bits) << ": 0" <<
+        ". DST " << inet_ntoa(ip) << "/" << unsigned(dst_mask_bits) << ": " << port <<
+        "--> rxq " << id
     );
+
+    struct rte_eth_ntuple_filter ntuple_filter;
+    ntuple_filter.src_ip = htonl(saddr.s_addr);
+    ntuple_filter.dst_ip = ip.s_addr; // Stored in network order
+    ntuple_filter.src_ip_mask = src_mask;
+    ntuple_filter.dst_ip_mask = dst_mask;
+    ntuple_filter.proto = IPPROTO_UDP;
+    ntuple_filter.proto_mask = 0xff;
+    ntuple_filter.src_port = 0x0;
+    ntuple_filter.dst_port = RTE_BE16(port); // Stored in host order
+    ntuple_filter.src_port_mask = 0x0;
+    ntuple_filter.dst_port_mask = 0xffff;
+
+    rte_ether_addr src_mac = {
+        .addr_bytes = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
+    };
+
     struct rte_flow *flow = generate_ipv4_flow(
-        port_id, id,
-        saddr.s_addr, src_mask, ip.s_addr, dst_mask,
-        &error
+        port_id, id, ntuple_filter, &error
     );
+
     if (!flow) {
         PSP_ERROR("Flow can't be created. Error " << error.type
                   << ", message: " << error.message);//? error.message : "(no stated reason)");

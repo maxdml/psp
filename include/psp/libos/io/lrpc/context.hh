@@ -26,6 +26,7 @@ class LrpcContext {
         memset(ingress, 0, sizeof(struct lrpc_chan_in) * MAX_PEERS);
         memset(egress, 0, sizeof(struct lrpc_chan_out) * MAX_PEERS);
     };
+    /*
     public: ~LrpcContext() {
         for (int i = 0; i < MAX_PEERS; ++i) {
             if (ingress[i].tbl) {
@@ -34,8 +35,13 @@ class LrpcContext {
             } else {
                 break;
             }
+            if (egress[i].tbl) {
+                free(egress[i].tbl);
+                free(egress[i].recv_head_wb);
+           }
         }
     }
+    */
 };
 
 #endif //LRPC_CTX_H_

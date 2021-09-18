@@ -8,13 +8,12 @@
 
 #define DEFAULT_TX_RS_THRESH 32
 
-#define MAX_PATTERN_NUM 3
+#define MAX_PATTERN_NUM 4
 #define MAX_ACTION_NUM 3
 int rte_eth_dev_flow_ctrl_get(uint16_t port_id, struct rte_eth_fc_conf &fc_conf);
 int rte_eth_dev_flow_ctrl_set(uint16_t port_id, const struct rte_eth_fc_conf &fc_conf);
 rte_flow * generate_ipv4_flow(uint16_t port_id, uint16_t rx_q,
-                              uint32_t src_ip, uint32_t src_mask,
-                              uint32_t dest_ip, uint32_t dest_mask,
+                              struct rte_eth_ntuple_filter &ntuple_filter,
                               struct rte_flow_error *error);
 int dpdk_net_init(const char *app_cfg_filename);
 int init_dpdk_port(uint16_t port_id, rte_mempool *mbuf_pool,

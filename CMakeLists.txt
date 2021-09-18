@@ -27,7 +27,7 @@ endfunction(target_add_fake_work)
 
 # RocksDB flags
 set(RDB_DIR ${CMAKE_SOURCE_DIR}/submodules/rocksdb)
-set(RDB_LIBRARIES gflags snappy z lz4 jemalloc)
+set(RDB_LIBRARIES gflags snappy z lz4 bz2 zstd jemalloc)
 function(target_add_rocksdb TARGET)
     target_include_directories(${TARGET} PUBLIC ${RDB_DIR}/include/rocksdb)
     target_link_libraries(${TARGET} ${RDB_DIR}/librocksdb.a)

@@ -49,17 +49,11 @@ int init_dpdk_port(uint16_t port_id, rte_mempool *mbuf_pool,
     PSP_OK(rte_eth_dev_info_get(port_id, dev_info));
 
     struct ::rte_eth_conf port_conf = {};
-    //port_conf.rxmode.mq_mode = ETH_MQ_RX_NONE;
+    port_conf.rxmode.mq_mode = ETH_MQ_RX_NONE;
     //port_conf.rxmode.offloads = DEV_TX_OFFLOAD_UDP_CKSUM;
-    port_conf.rxmode.mq_mode = ETH_MQ_RX_RSS;
+    //port_conf.rxmode.mq_mode = ETH_MQ_RX_RSS;
     port_conf.rxmode.max_rx_pkt_len = 1024;
-    std::cout << "mx rx pkt len= " << port_conf.rxmode.max_rx_pkt_len << std::endl;
-
-    if (dev_info.tx_offload_capa & DEV_TX_OFFLOAD_MBUF_FAST_FREE) {
-        //port_conf.txmode.offloads |= DEV_TX_OFFLOAD_MBUF_FAST_FREE;
-    } else {
-        PSP_WARN("NIC does not supports DEV_TX_OFFLOAD_MBUF_FAST_FREE");
-    }
+    //std::cout << "mx rx pkt len= " << port_conf.rxmode.max_rx_pkt_len << std::endl;
 
     //port_conf.txmode.mq_mode = ETH_MQ_TX_NONE;
     //port_conf.txmode.offloads |=
@@ -74,8 +68,8 @@ int init_dpdk_port(uint16_t port_id, rte_mempool *mbuf_pool,
 
     struct ::rte_eth_txconf tx_conf = dev_info.default_txconf;
     tx_conf.tx_rs_thresh = DEFAULT_TX_RS_THRESH;
-    tx_conf.offloads = DEV_TX_OFFLOAD_MBUF_FAST_FREE;
     /*
+    tx_conf.offloads = DEV_TX_OFFLOAD_MBUF_FAST_FREE;
     tx_conf.tx_rs_thresh = 0;
     tx_conf.offloads = 0x0;
     */
@@ -165,8 +159,7 @@ int rte_eth_dev_flow_ctrl_set(uint16_t port_id, const struct rte_eth_fc_conf &fc
 }
 
 rte_flow * generate_ipv4_flow(uint16_t port_id, uint16_t rx_q,
-                              uint32_t src_ip, uint32_t src_mask,
-                              uint32_t dest_ip, uint32_t dest_mask,
+                              struct rte_eth_ntuple_filter &ntuple_filter,
                               struct rte_flow_error *error) {
     struct rte_flow_attr attr;
     /* Match only ingress packets */
@@ -182,41 +175,71 @@ rte_flow * generate_ipv4_flow(uint16_t port_id, uint16_t rx_q,
 
     /* Count action for stats */
     /* XXX Not supported on X710
+    */
     struct rte_flow_action_count count;
     count.shared = 0;
     count.id = rx_q;
     struct rte_flow_action count_action = { RTE_FLOW_ACTION_TYPE_COUNT, &count};
-    */
 
     /* Queue action for packet steering */
     struct rte_flow_action_queue queue = { .index = rx_q };
     struct rte_flow_action queue_action = { RTE_FLOW_ACTION_TYPE_QUEUE, &queue};
 
     /* IP and UDP spec and masks */
-    struct rte_flow_item_ipv4 ip_spec;
-    struct rte_flow_item_ipv4 ip_mask;
-    memset(&ip_spec, 0, sizeof(struct rte_flow_item_ipv4));
-    memset(&ip_mask, 0, sizeof(struct rte_flow_item_ipv4));
+    struct rte_flow_item_ipv4 ipv4_spec;
+    memset(&ipv4_spec, 0, sizeof(struct rte_flow_item_ipv4));
+    ipv4_spec.hdr.next_proto_id = ntuple_filter.proto;
+    ipv4_spec.hdr.src_addr = ntuple_filter.src_ip;
+    ipv4_spec.hdr.dst_addr = ntuple_filter.dst_ip;
+
+    struct rte_flow_item_ipv4 ipv4_mask;
+    memset(&ipv4_mask, 0, sizeof(struct rte_flow_item_ipv4));
+    ipv4_mask.hdr.next_proto_id = ntuple_filter.proto_mask;
+    ipv4_mask.hdr.src_addr = ntuple_filter.src_ip_mask;
+    ipv4_mask.hdr.dst_addr = ntuple_filter.dst_ip_mask;
+
+    struct rte_flow_item_udp udp_spec;
+    memset(&udp_spec, 0, sizeof(struct rte_flow_item_udp));
+    udp_spec.hdr.src_port = ntuple_filter.src_port;
+    udp_spec.hdr.dst_port = ntuple_filter.dst_port;
+    udp_spec.hdr.dgram_len = 0;
+    udp_spec.hdr.dgram_cksum = 0;
+
+    struct rte_flow_item_udp udp_mask;
+    memset(&udp_mask, 0, sizeof(struct rte_flow_item_udp));
+    udp_mask.hdr.src_port = ntuple_filter.src_port_mask;
+    udp_mask.hdr.dst_port = ntuple_filter.dst_port_mask;
+    udp_mask.hdr.dgram_len = 0;
+    udp_mask.hdr.dgram_cksum = 0;
 
     /* Create the action sequence: count matching packets and move it to queue */
-    //action[0] = count_action;
-    action[0] = queue_action;
-    action[1].type = RTE_FLOW_ACTION_TYPE_END;
+    action[0] = count_action;
+    action[1] = queue_action;
+    action[2].type = RTE_FLOW_ACTION_TYPE_END;
 
     // ETH
-    pattern[0].type = RTE_FLOW_ITEM_TYPE_ETH;
+    static struct rte_flow_item eth_item = {
+        RTE_FLOW_ITEM_TYPE_ETH, 0, 0, 0
+    };
+    pattern[0] = eth_item;
 
     // IPV4
-    ip_spec.hdr.dst_addr = dest_ip;
-    ip_mask.hdr.dst_addr = dest_mask;
-    ip_spec.hdr.src_addr = src_ip;
-    ip_mask.hdr.src_addr = src_mask;
     pattern[1].type = RTE_FLOW_ITEM_TYPE_IPV4;
-    pattern[1].spec = &ip_spec;
-    pattern[1].mask = &ip_mask;
+    pattern[1].spec = &ipv4_spec;
+    pattern[1].mask = &ipv4_mask;
+    pattern[1].last = NULL;
+
+    // UDP
+    pattern[2].type = RTE_FLOW_ITEM_TYPE_UDP;
+    pattern[2].spec = &udp_spec;
+    pattern[2].mask = &udp_mask;
+    pattern[2].last = NULL;
 
     // END
-    pattern[2].type = RTE_FLOW_ITEM_TYPE_END;
+    static struct rte_flow_item end_item = {
+        RTE_FLOW_ITEM_TYPE_END, 0, 0, 0
+    };
+    pattern[3] = end_item;
 
     int res = rte_flow_validate(port_id, &attr, pattern, action, error);
     if (!res)
