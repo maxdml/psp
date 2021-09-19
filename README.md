@@ -10,25 +10,9 @@ Setting up Perséphone
 ```bash
 # Install required packages.
 sudo apt-get update && sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y; sudo apt install -y cmake libaio-dev libcunit1-dev libjemalloc-dev libmnl-dev libnl-3-dev libnl-route-3-dev libboost-program-options-dev libboost-system-dev libboost-chrono-dev libboost-context-dev libnuma-dev libyaml-cpp-dev liblz4-dev libgflags-dev libsnappy-dev libbz2-dev libzstd-dev numactl msr-tools htop libconfig-dev software-properties-common; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y gcc-7 g++-7; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+# We use PSP_DIR across the setup scripts.
 export PSP_DIR=~/Persephone
-```
-To enable more precise measurements, take the first NUMA node out of CFS' domain and disable kaslr.
-In _/etc/default/grub_, append the following line to the entry "GRUB_CMDLINE_LINUX_DEFAULT"
-> nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
-Reboot all the nodes:
-```bash
-# Update grub to apply these changes
-sudo update-grub; sudo reboot
-```
-Check whether the change was correctly applied:
-```bash
-cat /proc/cmdline
-BOOT_IMAGE=/boot/vmlinuz-4.4.0-210-generic root=UUID=ce184cb1-3771-4a20-b6cd-8e9a4649a561 ro console=ttyS0,115200 nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
-export PSP_DIR=~/Persephone
-```
-
-Clone the repo on the server machine and run the setup script.
-```bash
+# Clone the repo on the server machine and run the setup script.
 git clone --recurse-submodules https://github.com/maxdml/psp.git ${PSP_DIR}
 # set `-DDPDK_MELLANOX_SUPPORT` to `ON` for Connectx-5
 ${PSP_DIR}/scripts/setup/base_setup.sh
