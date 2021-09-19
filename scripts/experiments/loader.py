@@ -16,7 +16,7 @@ import yaml
 
 cache = {}
 
-exp_base_folder = '/psp/experiments/'
+exp_base_folder = '/psp/experiments-data/'
 
 distros = {
     'Figure3': 'DISP2',
@@ -26,7 +26,6 @@ distros = {
     'Figure5_b': 'SBIM2',
     'Figure6': 'TPCC',
     'Figure7': 'ROCKSDB'
-    #TODO Figure8 ?
 }
 
 workloads = {

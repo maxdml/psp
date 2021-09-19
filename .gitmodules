@@ -9,12 +9,12 @@
 [submodule "submodules/rocksdb"]
 	path = submodules/rocksdb
 	url = https://github.com/facebook/rocksdb
-[submodule "submodules/Shremote"]
-	path = submodules/Shremote
-	url = https://github.com/isaac-ped/Shremote
 [submodule "submodules/fake_work"]
 	path = submodules/fake_work
 	url = https://github.com/maxdml/fake_work
 [submodule "submodules/shenango"]
 	path = submodules/shenango
 	url = https://github.com/joshuafried/psp_shenango
+[submodule "submodules/Shremote"]
+	path = submodules/Shremote
+	url = https://github.com/isaac-ped/Shremote

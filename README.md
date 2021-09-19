@@ -1,70 +1,52 @@
 Perséphone
 ==========
 
-This repository hosts our artifact for the SOSP'21 Artifact Evaluation Committee.
 Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. We evaluate Perséphone against two competing systems, [Shenango](https://www.usenix.org/conference/nsdi19/presentation/ousterhout) and [Shinjuku](https://www.usenix.org/conference/nsdi19/presentation/kaffes).
 
-We will use cloudlab to reproduce the paper's results and provide a pre-built image. You can look at [these instructions](BUILD_IMAGE.md) to setup your own machines.
-
-We estimate the entire process to take 5 to 6 hours.
-
-Please reach out with any question. We set up an IRC channel on QuakeNet, #psp, and will be monitoring this channel 9 a.m to 6 p.m Pacific and Eastern times.
 
 Setting up Perséphone
 =====================
 
-Creating the cloudlab experiment
---------------------------------
-We will use Clemson's c6420 machines, so make sure that some are [available](https://www.cloudlab.us/resinfo.php).
-
-- [Login to Cloudlab](https://www.cloudlab.us/login.php).
-- Instantiate an experiment with our [cloudlab profile](https://www.cloudlab.us/p/Psp/sospAEC).
-
-You should be able to login using your cloudlab credentials.
-
-Building the systems
----------------------------------
-On the server machine:
 ```bash
-export AE_DIR=/usr/local/sosp
-git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/Persephone
-${AE_DIR}/Persephone/sosp_aec/base_setup.sh
+# Install required packages.
+sudo apt-get update && sudo apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade -y; sudo apt install -y cmake libaio-dev libcunit1-dev libjemalloc-dev libmnl-dev libnl-3-dev libnl-route-3-dev libboost-program-options-dev libboost-system-dev libboost-chrono-dev libboost-context-dev libnuma-dev libyaml-cpp-dev liblz4-dev libgflags-dev libsnappy-dev libbz2-dev libzstd-dev numactl msr-tools htop libconfig-dev software-properties-common; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt update; sudo apt install -y gcc-7 g++-7; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+export PSP_DIR=~/Persephone
 ```
-This script will setup Perséphone, Shinjuku, and other dependent systems.
-
-Shenango builds and runs on a different kernel, so we need to configure and restart the machine:
+To enable more precise measurements, take the first NUMA node out of CFS' domain and disable kaslr.
+In _/etc/default/grub_, append the following line to the entry "GRUB_CMDLINE_LINUX_DEFAULT"
+> nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
+Reboot all the nodes:
 ```bash
-sudo ${AE_DIR}/Persephone/scripts/setup/pick_kernel.sh 4.15.0-142-generic
-sudo reboot
+# Update grub to apply these changes
+sudo update-grub; sudo reboot
 ```
-Then:
+Check whether the change was correctly applied:
 ```bash
-export AE_DIR=/usr/local/sosp
-${AE_DIR}/Persephone/sosp_aec/build_shenango.sh
+cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-4.4.0-210-generic root=UUID=ce184cb1-3771-4a20-b6cd-8e9a4649a561 ro console=ttyS0,115200 nokaslr isolcpus=0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 nohz=on nohz_full=0,2,4,6,8,10,,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 maxcpus=64
+export PSP_DIR=~/Persephone
 ```
 
-On the client machines:
+Clone the repo on the server machine and run the setup script.
 ```bash
-export AE_DIR=/usr/local/sosp
-git clone --recurse-submodules https://github.com/maxdml/psp.git ${AE_DIR}/client; cd ${AE_DIR}/client; git checkout client; mkdir ${AE_DIR}/client/build; cd ${AE_DIR}/client/build; cmake -DCMAKE_BUILD_TYPE=Release -DDPDK_MELLANOX_SUPPORT=OFF ${AE_DIR}/client; make -j -C ${AE_DIR}/client/build
-${AE_DIR}/client/sosp_aec/base_start.sh client
+git clone --recurse-submodules https://github.com/maxdml/psp.git ${PSP_DIR}
+# set `-DDPDK_MELLANOX_SUPPORT` to `ON` for Connectx-5
+${PSP_DIR}/scripts/setup/base_setup.sh
 ```
 
 Simple client-server tests
----------------------------------
-We will now make sure that all three systems work (Perséphone, Shinjuku, Shenango).
+========================
 
-### Perséphone
 On the server On the server (reboot on 4.4.0-187-generic if needed):
 ```bash
-${AE_DIR}/Persephone/sosp_aec/base_start.sh Persephone
-cd ${AE_DIR}/Persephone/build/src/c++/apps/app/
-sudo numactl -N0 -m0 ./psp-app --cfg ${AE_DIR}/Persephone/sosp_aec/configs/base_psp_cfg.yml --label test
+${PSP_DIR}/scripts/setup/base_start.sh
+cd ${PSP_DIR}/build/src/c++/apps/app/
+sudo numactl -N0 -m0 ./psp-app --cfg ${PSP_DIR}/configs/base_psp_cfg.yml --label test
 ```
 
 On one client:
 ```bash
-sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
+sudo numactl -N0 -m0 ${PSP_DIR}/client/build/src/c++/apps//client/client --config-path ${PSP_DIR}/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
 If you see an output similar to the one below, the system works as expected. You can ignore the Fdir error.
@@ -85,70 +67,26 @@ If you see an output similar to the one below, the system works as expected. You
 >Port 0: _______ tx_size_64_packets:		10002462  
 >Port 0: _______ rx_flow_director_sb_match_packets:		4294967275  
 
-### Shinjuku
-On the server (reboot on 4.4.0-187-generic if needed)
-```bash
-# We use base_start.sh to unbind the NIC from igb_uio
-${AE_DIR}/Persephone/sosp_aec/base_start.sh shinjuku
-sudo numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shinjuku/dp/shinjuku -c ${AE_DIR}/Persephone/sosp_aec/configs/base_shinjuku_conf
-```
-
-On the client update the server's NIC MAC address in the config file.
-One way to find the NIC MAC ID is through the Cloudlab portal, by clicking on the node. It should be the only 10Gbps NIC, eth1.
-In ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml, put that value in the field "remote_mac".
-```bash
-sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_sjk_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
-```
-
-You should have a similar ouput than for Perséphone if this test worked correctly.
-
-### Shenango
-On one server terminal (reboot on 4.15.0-142-generic if needed)
-```bash
-${AE_DIR}/Persephone/sosp_aec/base_start.sh Shenango
-sudo ${AE_DIR}/Persephone/submodules/shenango/iokerneld ias 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62 noht
-```
-On a second server terminal
-```bash
-numactl -N0 -m0 ${AE_DIR}/Persephone/submodules/shenango/apps/psp_fakework/psp_fakework ${AE_DIR}/Persephone/sosp_aec/configs/base_shenango_conf 6789
-```
-
-On a client machine
-```bash
-sudo numactl -N0 -m0 ${AE_DIR}/client/build/src/c++/apps//client/client --config-path ${AE_DIR}/client/sosp_aec/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
-```
-
-You should have a similar ouput than for Perséphone if this test worked correctly.
-
-Reproducing experiments
+Running experiments
 =======================
-Throughout this section, we will be using [Shremote](Shremote) to orchestrate experiments and gather results. We will also use the provided [notebook](sosp_aec/sosp_21.pynb) to plot the figures. For each figure, we will generate the data and plot them using the corresponding notebook cell.
+We use [Shremote](Shremote) to orchestrate experiments and gather results. We also use a [notebook](scripts/experiments/psp.pynb) to plot the figures. The notebook includes sample shremote commands. For convenience you can setup a docker container using our provided [Dockerfile](scripts/experiments/Dockerfile).
 
-Setting up an orchestrator node
+Setting up The container
 ----------------
-On a machine that is *not* one of the 7 cloudlab nodes, we will set up an environment to orchestrate experiments, gather and plot data. We provide a docker image to do so.
 
-[Install docker](https://docs.docker.com/engine/install/ubuntu/)  (you might have to restart the docker service before running a container)
+[Install docker](https://docs.docker.com/engine/install/ubuntu/)  (you might have to restart the docker service before running a container).
 
 Build and start the container:
 ```bash
-git clone --recurse-submodules https://github.com/maxdml/psp.git
-cd psp
-sudo docker build -t ubuntu-aec .
-sudo docker run -p 8888:8888 ubuntu-aec
+cd ${PSP_DIR}/scripts/experiments/
+sudo docker build -t psp .
+sudo docker run -p 8888:8888 psp
 ```
-
 Then:
 - Log in the container to configure it `bash sudo docker exec -it CONTAINER_ID /bin/bash`
 - You can find the docker container ID with `sudo docker ps`
-- Setup your cloudlab private key as `/root/.ssh/aec` set it to 600
+- Setup private SSH key for the machines hosting your server and clients
 - In /psp/Shremote_cfgs/config, update:
-    - ssh_config.yml: set cloudlab username
-    - hosts.yml: update "addr" for each machine (e.g., clnode42)
-- In /psp/Shremote_cfgs/shinjuku.yml, update the server MAC address ("server_net.mac" field)
-
-Reproducing results
-----------------
-
-Go to localhost:8888 on your browser. Open the notebook "aec.ipynb".
-Each cell contains instructions to generate the data. To run the commands provided in the notebook, execute `sudo docker exec -it IMAGE_ID /bin/bash` to open a terminal in the container.
+    - ssh_config.yml: set your remote username
+    - hosts.yml: update "addr" for each machine
+- In scripts/experiments/loader.py, update "exp_base_folder" for the location of ${PSP_DIR}/experiments-data
