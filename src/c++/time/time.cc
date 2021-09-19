@@ -1,6 +1,8 @@
 #include <psp/time.hh>
 #include <stdint.h>
 
+float cycles_per_ns __aligned(CACHE_LINE_SIZE);
+
 uint64_t since_epoch(const tp &time) {
     return boost::chrono::time_point_cast<boost::chrono::nanoseconds>(time).time_since_epoch().count();
 }

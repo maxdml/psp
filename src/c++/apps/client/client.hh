@@ -366,7 +366,7 @@ class Client : public Worker {
                     continue;
                 }
                 // Store values in nanoseconds
-                insert_value(&hist, (pruned_requests[i]->completed - pruned_requests[i]->sending) / FREQ);
+                insert_value(&hist, (pruned_requests[i]->completed - pruned_requests[i]->sending) / cycles_per_ns);
             }
             if (hist.count == 0) {
                 PSP_WARN("No values inserted in histogram");
@@ -410,7 +410,7 @@ class Client : public Worker {
                 auto reqs = rtype.second;
                 for (uint64_t i = 0; i < reqs.size(); ++i) {
                     // Store values in nanoseconds
-                    insert_value(&hist, (reqs[i]->completed - reqs[i]->sending) / FREQ);
+                    insert_value(&hist, (reqs[i]->completed - reqs[i]->sending) / cycles_per_ns);
                 }
 		if (hist.count == 0) {
 		    PSP_WARN(
@@ -452,7 +452,7 @@ class Client : public Worker {
         for (ClientRequest *req: requests) {
             if (req->completed == 0)
                 continue;
-            auto type_epoch = std::pair(req->type, ((req->completed / FREQ) - first_cplted) / epoch_size_ns);
+            auto type_epoch = std::pair(req->type, ((req->completed / cycles_per_ns) - first_cplted) / epoch_size_ns);
             if (type_epoch_counts.find(type_epoch) == type_epoch_counts.end()) {
                 type_epoch_counts[type_epoch] = 0;
             }
@@ -472,18 +472,18 @@ class Client : public Worker {
         if (req.completed == 0) {
             return LLONG_MAX;
         } else {
-            return (req.completed - req.sending) / FREQ;
+            return (req.completed - req.sending) / cycles_per_ns;
         }
     }
 
     public: static uint64_t req_time(const ClientRequest &req) {
-        return req.sending / FREQ;
+        return req.sending / cycles_per_ns;
     }
 
     private: int check_hist(std::vector<ClientRequest *> &reqs, uint64_t nr) {
         std::cout << "======================================" << std::endl;
         std::cout << "Hist min: " << hist.min
-                  << ". Min: " << (reqs[0]->completed - reqs[0]->sending) / FREQ << std::endl;
+                  << ". Min: " << (reqs[0]->completed - reqs[0]->sending) / cycles_per_ns << std::endl;
         uint32_t c = 0;
         for (uint32_t i = 0; i < hist.buckets.size(); ++i) {
             if (hist.buckets[i] == 0)
@@ -491,44 +491,44 @@ class Client : public Worker {
             if (c + hist.buckets[i] >= hist.count * .25 and c < hist.count * .25) {
                 std::cout << std::fixed << "Hist 25th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 25th: "
-                          << (reqs[nr*25/100]->completed - reqs[nr*25/100]->sending) / FREQ
+                          << (reqs[nr*25/100]->completed - reqs[nr*25/100]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .5 and c < hist.count * .5) {
                 std::cout << std::fixed << "Hist 50th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 50th: "
-                          << (reqs[nr/2]->completed - reqs[nr/2]->sending) / FREQ
+                          << (reqs[nr/2]->completed - reqs[nr/2]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .75 and c < hist.count * .75) {
                 std::cout << std::fixed << "Hist 75th: " <<  (i*1000 + (i+1)*1000) / 2.0
                 //std::cout << "Hist 75th: " << ((1UL << i) + (1UL << (i-1))) / 2.0
                           << ". 75th: "
-                          << (reqs[nr*75/100]->completed - reqs[nr*75/100]->sending) / FREQ
+                          << (reqs[nr*75/100]->completed - reqs[nr*75/100]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .9 and c < hist.count * .9) {
                 std::cout << std::fixed << "Hist 90th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 90th: "
-                          << (reqs[nr*90/100]->completed - reqs[nr*90/100]->sending) / FREQ
+                          << (reqs[nr*90/100]->completed - reqs[nr*90/100]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .99 and c < hist.count * .99) {
                 std::cout << std::fixed << "Hist 99th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 99th: "
-                          << (reqs[nr*99/100]->completed - reqs[nr*99/100]->sending) / FREQ
+                          << (reqs[nr*99/100]->completed - reqs[nr*99/100]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .999 and c < hist.count * .999) {
                 std::cout << std::fixed << "Hist 99.9th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 99.9th: "
-                          << (reqs[nr*999/1000]->completed - reqs[nr*999/1000]->sending) / FREQ
+                          << (reqs[nr*999/1000]->completed - reqs[nr*999/1000]->sending) / cycles_per_ns
                           << std::endl;
             }
             if (c + hist.buckets[i] >= hist.count * .9999 and c < hist.count * .9999) {
                 std::cout << std::fixed << "Hist 99.99th: " <<  (i*1000 + (i+1)*1000) / 2.0
                           << ". 99.99th: "
-                          << (reqs[nr*9999/10000]->completed - reqs[nr*9999/10000]->sending) / FREQ
+                          << (reqs[nr*9999/10000]->completed - reqs[nr*9999/10000]->sending) / cycles_per_ns
                           << std::endl;
             }
             c += hist.buckets[i];
@@ -536,7 +536,7 @@ class Client : public Worker {
         PSP_TRUE(EINVAL, c == hist.count);
 
         std::cout << "Hist max: " << hist.max
-                  << ". Max: " << (reqs[nr]->completed - reqs[nr]->sending) / FREQ << std::endl;
+                  << ". Max: " << (reqs[nr]->completed - reqs[nr]->sending) / cycles_per_ns << std::endl;
         std::cout << "Hist count: " << c << ". Num requests: " << nr+1 << std::endl;
         std::cout << "======================================" << std::endl;
         return 0;

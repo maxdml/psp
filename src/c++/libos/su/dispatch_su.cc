@@ -169,7 +169,7 @@ int Dispatcher::update_darc() {
         }
         n_active++;
         // Update the type
-        rtype->mean_ns = static_cast<uint64_t>((rtype->windows_mean_ns - 600) / FREQ); //FIXME meh
+        rtype->mean_ns = static_cast<uint64_t>((rtype->windows_mean_ns - 600) / cycles_per_ns); //FIXME meh
         rtype->ratio = (rtype->windows_count * 1.0) / windows[n_windows].count;
         // Update the window's mean service time
         windows[n_windows].mean_ns += rtype->mean_ns * rtype->ratio;
@@ -177,7 +177,7 @@ int Dispatcher::update_darc() {
             "[" << req_type_str[static_cast<int>(rtype->type)] << "] "
             << "[Window " << n_windows << "]"
             << "mean ns: " << rtype->mean_ns
-            << " max delay : " << rtype->max_delay / FREQ
+            << " max delay : " << rtype->max_delay / cycles_per_ns
             << " ratio: " << rtype->ratio
         );
         // Reset the profiling windows
@@ -192,7 +192,7 @@ int Dispatcher::update_darc() {
         double diff = abs(demand - rtype->prev_demand);
         if (diff > (rtype->prev_demand * .1) or (rtype->ratio > 0 and n_active != prev_active)) {
             windows[n_windows].do_update = true;
-            rtype->max_delay = rtype->mean_ns * FREQ; // in cycles
+            rtype->max_delay = rtype->mean_ns * cycles_per_ns; // in cycles
             rtype->prev_demand = demand;
         }
     }
@@ -273,7 +273,7 @@ int Dispatcher::dispatch() {
             first_resa_done = true;
             PSP_OK(update_darc());
         }
-    //} else if ((cur_tsc - windows[n_windows].tsc) > UPDATE_PERIOD and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
+    //} else if ((cur_tsc - windows[n_windows].tsc) > update_frequency and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
     } else if (dp == DARC and likely(dynamic) and windows[n_windows].count > RESA_SAMPLES_NEEDED) {
         for (uint32_t i = 0; i < n_rtypes; ++i) {
             if ((rtypes[i]->rqueue_head - rtypes[i]->rqueue_tail) < 2)
@@ -284,8 +284,8 @@ int Dispatcher::dispatch() {
                 PSP_DEBUG(
                     "[UPDATE_PERIOD] updating type "
                     << req_type_str[static_cast<int>(rtypes[i]->type)]
-                    << " because delay " << rtypes[i]->delay / FREQ
-                    << " is greater than " << rtypes[i]->max_delay / FREQ
+                    << " because delay " << rtypes[i]->delay / cycles_per_ns
+                    << " is greater than " << rtypes[i]->max_delay / cycles_per_ns
                 );
                 PSP_OK(update_darc());
                 break;

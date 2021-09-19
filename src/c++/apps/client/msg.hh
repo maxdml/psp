@@ -37,9 +37,9 @@ class ClientRequest {
     public: friend std::ostream& operator<< (std::ostream &out, const ClientRequest &req) {
         out << req.id << "\t"
         << req_type_str[static_cast<int>(req.type)] << "\t"
-        << std::fixed << req.sending / FREQ << "\t"
-        << std::fixed << req.completed / FREQ << "\t"
-        << std::fixed << (req.completed - req.sending) / FREQ << "\t"
+        << std::fixed << req.sending / cycles_per_ns << "\t"
+        << std::fixed << req.completed / cycles_per_ns << "\t"
+        << std::fixed << (req.completed - req.sending) / cycles_per_ns << "\t"
         << std::fixed << req.run_ns << "\t"
         << req.schedule_id;
         return out;

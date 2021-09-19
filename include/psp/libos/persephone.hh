@@ -9,7 +9,6 @@
 #include <thread>
 
 #include <psp/logging.hh>
-#include <psp/time.hh>
 #include <psp/libos/io/lrpc/context.hh>
 #include <psp/libos/io/udp_dpdk/context.hh>
 #include <psp/libos/Request.hh>

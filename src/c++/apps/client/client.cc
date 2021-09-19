@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
 #ifdef LOG_DEBUG
         log_info("Starting rate client with LOG_DEBUG on");
 #endif
+    get_system_freq();
     /* Parse options */
     uint64_t duration;
     double rate;

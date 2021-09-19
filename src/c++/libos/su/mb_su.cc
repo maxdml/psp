@@ -19,7 +19,7 @@ int MbWorker::process_request(unsigned long payload) {
     char *req_addr = type_addr + sizeof(uint32_t) * 2; // also pass request size
 
     //uint32_t spin_time = 1000;
-    unsigned int nloops = *reinterpret_cast<unsigned int *>(req_addr) * FREQ;
+    unsigned int nloops = *reinterpret_cast<unsigned int *>(req_addr) * cycles_per_ns;
     PSP_DEBUG("spinning for " << nloops);
     /*
     printf("spinning for %u\n", nloops);
@@ -28,7 +28,7 @@ int MbWorker::process_request(unsigned long payload) {
         uint64_t start = rdtscp(NULL);
     */
         fake_work(nloops);
-        //fake_work2(*reinterpret_cast<unsigned int *>(req_addr), FREQ);
+        //fake_work2(*reinterpret_cast<unsigned int *>(req_addr), cycles_per_ns);
     /*
         uint64_t end = rdtscp(NULL);
         durations[i] = (end - start) / 2.5;

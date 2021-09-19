@@ -19,6 +19,8 @@ uint32_t total_workers = 0;
 
 /********** CONTROL PLANE ******************/
 Psp::Psp(std::string &app_cfg, std::string l) {
+    get_system_freq();
+
     label = l;
     /* Let network libOS init its specific EAL */
     dpdk_net_init(app_cfg.c_str());
@@ -163,8 +165,10 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 dpt.first_resa_done = true;
             } else {
                 // Set spillway core (last core)
+                /* FIXME: this is useless here
                 dpt.spillway = dpt.n_workers - 1;
                 PSP_INFO("Setting spillway core on " << dpt.spillway);
+                */
 
                 /* We first start in cFCFS */
                 dpt.dp = Dispatcher::dispatch_mode::CFCFS;
@@ -183,7 +187,7 @@ Psp::Psp(std::string &app_cfg, std::string l) {
                 }
                 /*
                     uint64_t end = rdtscp(NULL);
-                    durations[i] = (end - start) / FREQ;
+                    durations[i] = (end - start) / cycles_per_ns;
                 }
                 std::sort(durations, durations + 1000);
                 printf("median: %f\n", durations[500]);

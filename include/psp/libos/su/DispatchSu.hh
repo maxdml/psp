@@ -9,7 +9,7 @@
 #define MAX_CLIENTS 64
 
 #define RESA_SAMPLES_NEEDED 5e4
-#define UPDATE_PERIOD 5 * 1e3 * FREQ //5 usec
+#define UPDATE_PERIOD 5 * 1e3 //5 usec
 #define MAX_WINDOWS 8192
 
 struct profiling_windows {
@@ -79,6 +79,7 @@ class Dispatcher : public Worker {
     private: float delta = 0.2; // Similarity factor
     public: bool first_resa_done;
     public: bool dynamic;
+    public: uint32_t update_frequency;
     public: profiling_windows windows[MAX_WINDOWS];
     private: uint32_t prev_active;
     private: uint32_t n_windows = 0;
@@ -101,8 +102,16 @@ class Dispatcher : public Worker {
         dp = Dispatcher::str_to_dp(policy);
     }
 
-    public: Dispatcher() : Worker(WorkerType::DISPATCH) {}
-    public: Dispatcher(int worker_id) : Worker(WorkerType::DISPATCH, worker_id) {}
+    public: Dispatcher() : Worker(WorkerType::DISPATCH) {
+        if (cycles_per_ns == 0)
+            PSP_WARN("Dispatcher set before system TSC was calibrated. DARC update frequency likely 0.");
+        update_frequency = UPDATE_PERIOD * cycles_per_ns;
+    }
+    public: Dispatcher(int worker_id) : Worker(WorkerType::DISPATCH, worker_id) {
+        if (cycles_per_ns == 0)
+            PSP_WARN("Dispatcher set before system TSC was calibrated. DARC update frequency likely 0.");
+        update_frequency = UPDATE_PERIOD * cycles_per_ns;
+    }
 
     public: ~Dispatcher() {
         PSP_INFO(
@@ -118,7 +127,7 @@ class Dispatcher : public Worker {
 
             PSP_INFO(
                 "[" << req_type_str[static_cast<int>(rtypes[i]->type)] << "] average ns: "
-                << rtypes[i]->windows_mean_ns / FREQ
+                << rtypes[i]->windows_mean_ns / cycles_per_ns
             );
             delete rtypes[i];
         }
@@ -141,8 +150,8 @@ class Dispatcher : public Worker {
                  for (size_t i = 0; i < n_windows; ++i) {
                      auto &w = windows[i];
                      for (size_t j = 0; j < n_rtypes; ++j) {
-                         output << i << "\t" << std::fixed << w.tsc_start / FREQ
-                                << "\t" << std::fixed << w.tsc_end / FREQ
+                         output << i << "\t" << std::fixed << w.tsc_start / cycles_per_ns
+                                << "\t" << std::fixed << w.tsc_end / cycles_per_ns
                                 << "\t" << j
                                 << "\t" << w.group_res[j] << "\t" << w.group_steal[j]
                                 << "\t" << w.counts[j] << "\t" << w.do_update
