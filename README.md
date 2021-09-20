@@ -30,7 +30,7 @@ sudo numactl -N0 -m0 ./psp-app --cfg ${PSP_DIR}/configs/base_psp_cfg.yml --label
 
 On one client:
 ```bash
-sudo numactl -N0 -m0 ${PSP_DIR}/client/build/src/c++/apps//client/client --config-path ${PSP_DIR}/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
+sudo numactl -N0 -m0 ${PSP_DIR}/build/src/c++/apps//client/client --config-path ${PSP_DIR}/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
 
 If you see an output similar to the one below, the system works as expected. You can ignore the Fdir error.
