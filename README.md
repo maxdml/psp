@@ -62,8 +62,8 @@ Setting up The container
 
 Build and start the container:
 ```bash
-cd ${PSP_DIR}/scripts/experiments/
-sudo docker build -t psp .
+cd ${PSP_DIR}
+sudo docker build -f scripts/experiments/ -t psp .
 sudo docker run -p 8888:8888 psp
 ```
 Then:

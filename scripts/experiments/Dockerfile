@@ -6,6 +6,8 @@ RUN mkdir psp
 WORKDIR psp
 COPY . .
 RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r scripts/experiments/requirements.txt
 RUN pip3 install jupyter
 CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
+RUN mkdir /root/.ssh
+RUN echo "host *clemson.cloudlab.us\n\tStrictHostKeyChecking=no" > /root/.ssh/config

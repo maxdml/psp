@@ -923,7 +923,7 @@ def plot_p99s(exp_files, app="MB", value='p99', use_ylim=True, close_all=True, n
 #     plt.subplots_adjust(left=0.05, bottom=None, right=0.95, top=None, wspace=0.3, hspace=0)
     plt.subplots_adjust(left=None, bottom=None, right=None, top=.8, wspace=None, hspace=None)
 #     fig.set_canvas(plt.gcf().canvas)
-    plt.savefig(f'/psp/experiments/{exp_files[0]}.pdf', format='pdf')
+    plt.savefig(f'/psp/experiments-data/{exp_files[0]}.pdf', format='pdf')
 #     gs1 = gridspec.GridSpec(23, 8)
 #     gs1.update(wspace=0.025, hspace=0.05) # set the spacing between axes.
 #     set_size(20,5)

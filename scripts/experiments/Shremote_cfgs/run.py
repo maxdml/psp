@@ -51,7 +51,7 @@ parser.add_argument('-L', '--load-range', nargs=2, type=float, default=[.05, 1.0
 args = parser.parse_args()
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCHEDULES = os.path.join(DIR, "schedules", "")
-SHREMOTE = os.path.join(DIR, "..", "submodules", "Shremote/shremote.py")
+SHREMOTE = os.path.join(DIR, "../../../", "submodules", "Shremote/shremote.py")
 BASE_OUTPUT = args.base_output
 SRV_CPUS = "2 4 6 8 10 12 14 16 18 20 22 24 26 28 30"
 CLT_CPUS = "2"

@@ -35,7 +35,6 @@ files: !include "config/files.yml"
 
 init_cmds:
     - cmd: >-
-        mkdir -p {0.files.client_cmds_dir.src};
         cp {0.params.schedule} {0.output_dir}
     - cmd: >-
         {0.dirs.shremote_cfgs}/format_scripts/format_psp_server.py
