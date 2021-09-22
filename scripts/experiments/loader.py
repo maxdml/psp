@@ -833,7 +833,7 @@ def plot_p99s(exp_files, app="MB", value='p99', use_ylim=True, close_all=True, n
                 axes[row][0].set_ylabel(f'p99.9 slowdown', fd)
 
                 for run in runs:
-                    for i, rtype in enumerate(req_types):
+                    for i, rtype in enumerate(req_types[:ncols-1]):
 #                         if rtype == 'LONG':
 #                             value = 'p99'
                         col = i + 1
