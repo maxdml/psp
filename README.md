@@ -1,8 +1,9 @@
 Perséphone
 ==========
 
-Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. We evaluate Perséphone against two competing systems, [Shenango](https://www.usenix.org/conference/nsdi19/presentation/ousterhout) and [Shinjuku](https://www.usenix.org/conference/nsdi19/presentation/kaffes).
+Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads.
 
+This repo also hosts the artifact we used for SOSP's artifact evaluation, in the branches "master" and "client". Please refer to the master branch to reproduce our results.
 
 Setting up Perséphone
 =====================
@@ -50,27 +51,3 @@ If you see an output similar to the one below, the system works as expected. You
 >Port 0: _______ rx_size_64_packets:		10002463  
 >Port 0: _______ tx_size_64_packets:		10002462  
 >Port 0: _______ rx_flow_director_sb_match_packets:		4294967275  
-
-Running experiments
-=======================
-We use [Shremote](Shremote) to orchestrate experiments and gather results. We also use a [notebook](scripts/experiments/psp.pynb) to plot the figures. The notebook includes sample shremote commands. For convenience you can setup a docker container using our provided [Dockerfile](scripts/experiments/Dockerfile).
-
-Setting up The container
-----------------
-
-[Install docker](https://docs.docker.com/engine/install/ubuntu/)  (you might have to restart the docker service before running a container).
-
-Build and start the container:
-```bash
-cd ${PSP_DIR}
-sudo docker build -f scripts/experiments/ -t psp .
-sudo docker run -p 8888:8888 psp
-```
-Then:
-- Log in the container to configure it `bash sudo docker exec -it CONTAINER_ID /bin/bash`
-- You can find the docker container ID with `sudo docker ps`
-- Setup private SSH key for the machines hosting your server and clients
-- In /psp/Shremote_cfgs/config, update:
-    - ssh_config.yml: set your remote username
-    - hosts.yml: update "addr" for each machine
-- In scripts/experiments/loader.py, update "exp_base_folder" for the location of ${PSP_DIR}/experiments-data
