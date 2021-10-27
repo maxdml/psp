@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
     std::vector<double> cmd_ratios;
     std::string output_filename;
     std::string output_dirname;
-    bool no_reformat = false;
     bool uniform = false;
     bool mb_reqs = false;
     bool ix_reqs = false;
@@ -78,7 +77,6 @@ int main(int argc, char *argv[]) {
     namespace po = boost::program_options;
     po::options_description desc{"Rate loop client options"};
     desc.add_options()
-        ("no-reformat,f", po::bool_switch(&no_reformat), "Do not apply http reformating on requests")
         ("uniform", po::bool_switch(&uniform), "Use a uniform sending rate")
         ("mb-reqs", po::bool_switch(&mb_reqs), "Generate microbenchmark requests with PSP protocol")
         ("ix-reqs", po::bool_switch(&ix_reqs), "Generate microbenchmark requests with IX protocol")

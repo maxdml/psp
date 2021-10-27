@@ -1,7 +1,7 @@
 Perséphone
 ==========
 
-Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads.
+Perséphone is a kernel-bypass request scheduler. It is designed to improve tail latency for short microsecond scale requests in heavy-tailed workloads. It was presented at [SOSP 2021](https://dl.acm.org/doi/10.1145/3477132.3483571).
 
 This repo also hosts the artifact we used for SOSP's artifact evaluation, in the branches "master" and "client". Please refer to the master branch to reproduce our results.
 
