@@ -22,14 +22,14 @@ ${PSP_DIR}/scripts/setup/base_setup.sh
 Simple client-server tests
 ========================
 
-On the server On the server (reboot on 4.4.0-187-generic if needed):
+On the server:
 ```bash
 ${PSP_DIR}/scripts/setup/base_start.sh
 cd ${PSP_DIR}/build/src/c++/apps/app/
 sudo numactl -N0 -m0 ./psp-app --cfg ${PSP_DIR}/configs/base_psp_cfg.yml --label test
 ```
 
-On one client:
+On a client:
 ```bash
 sudo numactl -N0 -m0 ${PSP_DIR}/build/src/c++/apps//client/client --config-path ${PSP_DIR}/configs/base_client_psp_cfg.yml --label test --ip 192.168.10.10 --port 6789 --max-concurrency -1 --sample -1 --collect-logs 1 --outdir client0
 ```
